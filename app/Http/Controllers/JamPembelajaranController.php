@@ -27,12 +27,6 @@ class JamPembelajaranController extends Controller
         return redirect()->back()->with('success', 'Data berhasil disimpan');
     }
 
-    public function update(Request $request, $id)
-    {
-        JamPembelajaran::where('id', $id)->update($request->all());
-        return redirect()->back()->with('success', 'Data berhasil diupdate');
-    }
-
     public function destroy($id)
     {
         JamPembelajaran::destroy($id);
