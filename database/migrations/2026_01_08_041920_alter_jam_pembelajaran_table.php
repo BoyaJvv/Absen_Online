@@ -6,23 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('jam_pembelajaran', function (Blueprint $table) {
-            //
+            $table->time('jam_mulai')->after('jam_masuk');
+            $table->time('jam_selesai')->after('jam_mulai');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('jam_pembelajaran', function (Blueprint $table) {
-            //
+            $table->dropColumn(['jam_mulai', 'jam_selesai']);
         });
     }
 };

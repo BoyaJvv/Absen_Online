@@ -2,6 +2,12 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JamPembelajaranController;
+
+Route::get('/jam-pembelajaran', [JamPembelajaranController::class, 'index']);
+Route::post('/jam-pembelajaran', [JamPembelajaranController::class, 'store']);
+Route::delete('/jam-pembelajaran/{id}', [JamPembelajaranController::class, 'destroy']);
+
 
 Route::get('/', function () {
     return view('index');
