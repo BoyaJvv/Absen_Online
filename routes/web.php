@@ -3,10 +3,27 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JamPembelajaranController;
+use App\Http\Controllers\JabatanStatusController;
 
 Route::get('/jam-pembelajaran', [JamPembelajaranController::class, 'index']);
 Route::post('/jam-pembelajaran', [JamPembelajaranController::class, 'store']);
 Route::delete('/jam-pembelajaran/{id}', [JamPembelajaranController::class, 'destroy']);
+
+
+
+//jabatan
+Route::prefix('jabatan')->name('jabatan.')->group(function () {
+    Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
+    Route::post('/', [JabatanStatusController::class, 'store'])->name('store');
+
+    Route::get('/{id}/edit', [JabatanStatusController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [JabatanStatusController::class, 'update'])->name('update');
+
+    Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
+});
+
+
+
 
 
 Route::get('/', function () {
