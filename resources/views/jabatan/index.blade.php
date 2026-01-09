@@ -41,6 +41,7 @@
             </form>
         </div>
 
+
         {{-- TABLE --}}
         <div class="bg-white shadow rounded mb-8 overflow-x-auto">
             <table class="min-w-full border text-sm">

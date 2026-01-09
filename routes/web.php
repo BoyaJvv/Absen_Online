@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CabangGedungController;
+use App\Http\Controllers\JabatanStatusController;
 
 
 // Cabang dan Gedung Routes
@@ -12,6 +13,18 @@ Route::post('/cabang-gedung', [CabangGedungController::class, 'store'])
     ->name('cabang-gedung.store');
 Route::delete('/cabang-gedung/{id}', [CabangGedungController::class, 'destroy'])
     ->name('cabang-gedung.destroy');
+
+//jabatan
+Route::prefix('jabatan')->name('jabatan.')->group(function () {
+    Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
+    Route::post('/', [JabatanStatusController::class, 'store'])->name('store');
+
+    Route::get('/{id}/edit', [JabatanStatusController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [JabatanStatusController::class, 'update'])->name('update');
+
+    Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
+});
+
 
 Route::get('/', function () {
     return view('index');
