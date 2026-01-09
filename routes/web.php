@@ -13,6 +13,10 @@ Route::post('/cabang-gedung', [CabangGedungController::class, 'store'])
     ->name('cabang-gedung.store');
 Route::delete('/cabang-gedung/{id}', [CabangGedungController::class, 'destroy'])
     ->name('cabang-gedung.destroy');
+Route::get('/cabang-gedung/{id}/edit', [CabangGedungController::class, 'edit'])
+    ->name('cabang-gedung.edit');
+Route::put('/cabang-gedung/{id}', [CabangGedungController::class, 'update'])
+    ->name('cabang-gedung.update');
 
 //jabatan
 Route::prefix('jabatan')->name('jabatan.')->group(function () {

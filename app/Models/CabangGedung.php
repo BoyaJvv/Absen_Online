@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Model;
+use App\Models\JadwalHarian;
 
 class CabangGedung extends Model
 {
@@ -20,5 +20,9 @@ class CabangGedung extends Model
     ];
 
     public $timestamps = false;
-}
 
+    public function jadwalHarian()
+    {
+        return $this->hasMany(JadwalHarian::class, 'cabang_gedung_id');
+    }
+}
