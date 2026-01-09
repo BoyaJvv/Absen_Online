@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CabangGedungController;
 use App\Http\Controllers\JabatanStatusController;
+use App\Http\Controllers\LiburKhususController;
 
 
 // Cabang dan Gedung Routes
@@ -17,6 +18,18 @@ Route::get('/cabang-gedung/{id}/edit', [CabangGedungController::class, 'edit'])
     ->name('cabang-gedung.edit');
 Route::put('/cabang-gedung/{id}', [CabangGedungController::class, 'update'])
     ->name('cabang-gedung.update');
+
+// libur khusus
+Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
+    Route::get('/', [LiburKhususController::class, 'index'])->name('index');
+    Route::post('/', [LiburKhususController::class, 'store'])->name('store');
+
+    Route::get('/{id}/edit', [LiburKhususController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [LiburKhususController::class, 'update'])->name('update');
+
+    Route::delete('/{id}', [LiburKhususController::class, 'destroy'])->name('destroy');
+});
+
 
 //jabatan
 Route::prefix('jabatan')->name('jabatan.')->group(function () {

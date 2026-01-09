@@ -74,7 +74,7 @@
                     Cuti
                 </a>
 
-                <a href="{{ url('pages/libur') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
+                <a href="{{ url('libur_khusus') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
                     <i class="bi bi-globe"></i>
                     Tanggal Libur Khusus
                 </a>
