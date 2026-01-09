@@ -2,29 +2,16 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\JamPembelajaranController;
-use App\Http\Controllers\JabatanStatusController;
-
-Route::get('/jam-pembelajaran', [JamPembelajaranController::class, 'index']);
-Route::post('/jam-pembelajaran', [JamPembelajaranController::class, 'store']);
-Route::delete('/jam-pembelajaran/{id}', [JamPembelajaranController::class, 'destroy']);
+use App\Http\Controllers\CabangGedungController;
 
 
-
-//jabatan
-Route::prefix('jabatan')->name('jabatan.')->group(function () {
-    Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
-    Route::post('/', [JabatanStatusController::class, 'store'])->name('store');
-
-    Route::get('/{id}/edit', [JabatanStatusController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [JabatanStatusController::class, 'update'])->name('update');
-
-    Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
-});
-
-
-
-
+// Cabang dan Gedung Routes
+Route::get('/cabang-gedung', [CabangGedungController::class, 'index'])
+    ->name('cabang-gedung.index');
+Route::post('/cabang-gedung', [CabangGedungController::class, 'store'])
+    ->name('cabang-gedung.store');
+Route::delete('/cabang-gedung/{id}', [CabangGedungController::class, 'destroy'])
+    ->name('cabang-gedung.destroy');
 
 Route::get('/', function () {
     return view('index');
