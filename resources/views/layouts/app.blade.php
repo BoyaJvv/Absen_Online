@@ -97,12 +97,13 @@
                 </summary>
 
                 <div class="ml-6 mt-1 space-y-1">
-                    <a href="{{ url('jabatan') }}" class="block px-4 py-2 rounded hover:bg-white/10">
+                    <a href="{{ url('pages/jabatan') }}" class="block px-4 py-2 rounded hover:bg-white/10">
                         Jabatan / Status
                     </a>
-                    <a href="{{ url('jam-pembelajaran') }}" class="block px-4 py-2 rounded hover:bg-white/10">
+                    <a href="{{ route('cabang-gedung.index') }}" class="block px-4 py-2 rounded hover:bg-white/10">
                         Cabang / Gedung
                     </a>
+
                     <a href="{{ url('pages/denda') }}" class="block px-4 py-2 rounded hover:bg-white/10">
                         Denda
                     </a>
