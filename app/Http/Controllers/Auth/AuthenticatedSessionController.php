@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -22,13 +22,31 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
+
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        // Ambil input
+        $nomor_induk = $request->nomor_induk;
+        $password = md5($request->password); // Menggunakan MD5 sesuai kode asli
 
-        $request->session()->regenerate();
+        // Cek ke database manual karena Auth::attempt menggunakan bcrypt
+        $user = \App\Models\User::where('nomor_induk', $nomor_induk)
+                    ->where('password', $password)
+                    ->first();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if ($user) {
+            // Login manual ke sistem Laravel
+            auth()->login($user);
+            
+            $request->session()->regenerate();
+
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        // Jika gagal
+        return back()->withErrors([
+            'nomor_induk' => 'Nomor Induk atau Password salah.',
+        ]);
     }
 
     /**
@@ -36,12 +54,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 }

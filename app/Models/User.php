@@ -17,11 +17,19 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $table = 'pengguna'; // Nama tabel kustom Anda
+
     protected $fillable = [
-        'name',
-        'email',
+        'nama',
+        'nomor_induk',
         'password',
     ];
+
+    // Beritahu Laravel untuk menggunakan nomor_induk sebagai pengganti email
+    public function getAuthIdentifierName()
+    {
+        return 'nomor_induk';
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -38,11 +46,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    // protected function casts(): array
+    // {
+    //     return [
+    //         'email_verified_at' => 'datetime',
+    //         'password' => 'hashed',
+    //     ];
+    // }
 }
