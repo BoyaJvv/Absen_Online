@@ -1,33 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
+@stack('css')
+@push('css')
+<style>
+    /* Memberikan efek bayangan lembut pada card */
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: none;
+    }
 
-<!-- Google Font: Source Sans Pro -->
+    /* Mempercantik Header Tabel */
+    .table {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .table thead th {
+        background-color: #f8f9fa;
+        color: #333;
+        text-transform: uppercase;
+        font-size: 12px;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .status-aktif {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 13px;
+    }
+    .status-non { background: #f8d7da; color: #721c24; }
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-
-  <!-- Font Awesome -->
-
-  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
-
-  <!-- DataTables -->
-
-  <link rel="stylesheet" href="../../plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-
-  <link rel="stylesheet" href="../../plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-
-  <link rel="stylesheet" href="../../plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-
-  <!-- Theme style -->
-
-  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+    /* Tombol Aksi */
+    .btn-edit {
+        color: #007bff;
+        transition: all 0.3s;
+    }
+    .btn-edit:hover {
+        color: #0056b3;
+        text-decoration: none;
+        transform: scale(1.1);
+    }
+</style>
+@endpush
 
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Pengguna</h1>
+                    <h1 class="head">Pengguna</h1>
                 </div>
             </div>
         </div>
@@ -60,67 +84,40 @@
                     <div class="card">
                         <div class="card-header">
                             <a href="{{ url('scan') }}" target="_blank" class="btn btn-block btn-outline-primary">Cek Pengguna (Scan Tag / Kartu)</a>
+                            <a href="{{ url('pengguna/create') }}" target="_blank" class="btn btn-block btn-outline-primary">Tambah Pengguna</a>
                         </div>
                         <div class="card-body">
-                            <table id="example1" class="table table-bordered table-striped">
+                            <table id="example1" class="table table-bordered table-striped" border="1">
                                 <thead>
                                     <tr>
                                         <th>Nomor Induk</th>
                                         <th>Nama</th>
-                                        <th>Jabatan / Status</th>
-                                        <th>Cabang / Gedung</th>
+                                        <th>Jabatan_Status</th>
+                                        <th>Cabang_Gedung</th>
                                         <th>Aktif</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                   
+                               <tbody>
+                                    @foreach($pengguna as $data)
+                                        @if($data->nomor_induk == 0) @continue @endif
+                                        <tr>
+                                            <td>{{ $data->nomor_induk }}</td>
+                                            <td>{{ $data->nama }}</td>
+                                            <td>{{ $data->jabatan_status ?? 'Tidak Ada' }}</td>
+                                            <td>{{ $data->lokasi ?? 'Tidak Ada' }}</td> 
+                                            <td>{{ $data->aktif == 1 ? 'Aktif' : 'Non-aktif' }}</td>
+                                            <td>
+                                                <a href="{{ route('pengguna.edit', $data->nomor_induk) }}"><i class="fas fa-edit"></i> Edit</a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Data Baru</h3>
-                        </div>
-                        <form method="POST" action="{{ route('pengguna.store') }}">
-                            @csrf
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label>Nomor Induk</label>
-                                    <input type="text" class="form-control" name="nomor_induk" placeholder="Nomor Induk" required autofocus>
-                                </div>
-                                <div class="form-group">
-                                    <label>Nama</label>
-                                    <input type="text" class="form-control" name="nama" placeholder="Nama Lengkap" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Jabatan / Status</label>
-                                    <select name="jabatan_status" class="form-control">
-                                        @foreach($jabatans as $j)
-                                            <option value="{{ $j->id }}">{{ $j->jabatan_status }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Cabang / Gedung</label>
-                                    <select name="cabang_gedung" class="form-control">
-                                        @foreach($lokasis as $l)
-                                            <option value="{{ $l->id }}">{{ $l->lokasi }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Tag</label>
-                                    <input type="text" name="tag" placeholder="Scan Tag RFID" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">Tambah</button>
-                            </div>
-                        </form>
-                    </div>
+                   
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CabangGedungController;
+use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\JabatanStatusController;
 use App\Http\Controllers\LiburKhususController;
 
@@ -42,14 +43,18 @@ Route::prefix('jabatan')->name('jabatan.')->group(function () {
     Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
 });
 
+Route::middleware('auth')->prefix('/pengguna')->name('pengguna.')->group(function () {
+    Route::get('/', [PenggunaController::class, 'index'])->name('index');
+    Route::get('/create', [PenggunaController::class, 'create'])->name('create');
+    Route::post('/', [PenggunaController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [PenggunaController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [PenggunaController::class, 'update'])->name('update');
 
-Route::get('/', function () {
-    return view('index');
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return view('index');
+})->middleware(['auth', 'verified'])->name('index');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
