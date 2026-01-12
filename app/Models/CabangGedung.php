@@ -1,12 +1,15 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use App\Models\JadwalHarian;
+use App\Models\Pengguna;
 
 class CabangGedung extends Model
 {
     protected $table = 'cabang_gedung';
+    public $timestamps = false;
 
     protected $fillable = [
         'lokasi',
@@ -19,10 +22,23 @@ class CabangGedung extends Model
         'aktif',
     ];
 
-    public $timestamps = false;
-
+    // 🔹 Jadwal
     public function jadwalHarian()
     {
-        return $this->hasMany(JadwalHarian::class, 'cabang_gedung_id');
+        return $this->hasMany(
+            JadwalHarian::class,
+            'cabang_gedung_id',
+            'id'
+        );
+    }
+
+    // 🔹 Pengguna di cabang ini
+    public function penggunas()
+    {
+        return $this->hasMany(
+            Pengguna::class,
+            'cabang_gedung',
+            'id'
+        );
     }
 }

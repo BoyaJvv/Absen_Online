@@ -6,6 +6,16 @@ use App\Http\Controllers\CabangGedungController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\JabatanStatusController;
 use App\Http\Controllers\LiburKhususController;
+use App\Http\Controllers\AbsensiController;
+
+Route::get('/absensi', [AbsensiController::class, 'index'])
+    ->name('absensi.index');
+Route::get('/absensi/{id}', [AbsensiController::class, 'show'])
+    ->name('absensi.show');
+Route::post('/absensi', [AbsensiController::class, 'store'])
+    ->name('absensi.store');
+Route::get('/absensi-mesin', [AbsensiController::class, 'byMesin'])
+    ->name('absensi.mesin');
 
 
 // Cabang dan Gedung Routes
