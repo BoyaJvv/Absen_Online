@@ -9,24 +9,24 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-  public function up(): void
-    {
-        Schema::create('cuti', function (Blueprint $table) {
-            $table->id();
-            $table->string('nomor_induk', 30);
-            $table->date('tanggal');
-            $table->timestamps();
-            
-            // Foreign key ke tabel pengguna
-            $table->foreign('nomor_induk')
-                  ->references('nomor_induk')
-                  ->on('pengguna')
-                  ->onDelete('cascade');
-        });
-    }
+ public function up(): void
+{
+    Schema::table('cuti', function (Blueprint $table) {
+        $table->foreign('nomor_induk')
+              ->references('nomor_induk')
+              ->on('pengguna')
+              ->onDelete('cascade');
 
-    public function down(): void
-    {
-        Schema::dropIfExists('cuti');
-    }
-};
+
+             
+    });
+}
+
+public function down(): void
+{
+    Schema::table('cuti', function (Blueprint $table) {
+        $table->dropForeign(['nomor_induk']);
+    });
+}
+
+        };
