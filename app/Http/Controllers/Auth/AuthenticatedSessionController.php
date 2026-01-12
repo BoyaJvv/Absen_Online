@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -25,28 +26,26 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Ambil input
+
         $nomor_induk = $request->nomor_induk;
-        $password = md5($request->password); // Menggunakan MD5 sesuai kode asli
+        $password = $request->password;
 
-        // Cek ke database manual karena Auth::attempt menggunakan bcrypt
-        $user = \App\Models\User::where('nomor_induk', $nomor_induk)
-                    ->where('password', $password)
-                    ->first();
+        $user = \App\Models\User::where('nomor_induk', $nomor_induk)->first();
 
-        if ($user) {
-            // Login manual ke sistem Laravel
-            auth()->login($user);
+        if ($user && Hash::check($password, $user->password)) {
+
+            // Login user ke dalam session
+            Auth::login($user);
             
             $request->session()->regenerate();
 
-            return redirect()->intended(route('index', absolute: false));
+            return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        // Jika gagal
+        // 4. Jika gagal (user tidak ditemukan atau password salah)
         return back()->withErrors([
             'nomor_induk' => 'Nomor Induk atau Password salah.',
-        ]);
+        ])->onlyInput('nomor_induk'); // Mengembalikan input nomor_induk agar tidak perlu ngetik ulang
     }
 
     /**

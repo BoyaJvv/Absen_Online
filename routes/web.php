@@ -68,13 +68,13 @@ Route::prefix('jabatan')->name('jabatan.')->group(function () {
     Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
 });
 
-Route::middleware('auth')->prefix('/pengguna')->name('pengguna.')->group(function () {
+Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function () {
     Route::get('/', [PenggunaController::class, 'index'])->name('index');
     Route::get('/create', [PenggunaController::class, 'create'])->name('create');
     Route::post('/', [PenggunaController::class, 'store'])->name('store');
     Route::get('/{id}/edit', [PenggunaController::class, 'edit'])->name('edit');
     Route::put('/{id}', [PenggunaController::class, 'update'])->name('update');
-
+    Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
 });
 
 Route::get('/dashboard', function () {

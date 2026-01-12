@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Pengguna;
 use Illuminate\Support\Facades\DB;
 
@@ -47,8 +48,7 @@ class PenggunaController extends Controller
         ]);
 
         // ===== PASSWORD MD5 -> Harusnya Bcrypt =====
-        // $hashedPassword = Hash::make($request->password);
-        $pass = md5($request->nomor_induk);
+        $hashedPassword = Hash::make($request->password);
 
         // 3. Simpan ke Database
         Pengguna::create([
@@ -57,7 +57,7 @@ class PenggunaController extends Controller
             'tag'            => $request->tag,
             'jabatan_status' => $request->jabatan_status,
             'cabang_gedung'  => $request->cabang_gedung,
-            'password'       => $pass, //$hashedPassword (Bcrypt)
+            'password'       => $hashedPassword,
             'aktif'          => 1 // default aktif
         ]);
 
@@ -80,7 +80,8 @@ class PenggunaController extends Controller
     // ====== UPDATE: Memperbarui Data ======
     public function update(Request $request, $id)
     {
-        $user = Pengguna::where('nomor_induk', $id)->firstOrFail();
+        // $user = Pengguna::where('nomor_induk', $id)->firstOrFail();
+        $user = Pengguna::findOrFail($id); 
 
         $user->update([
             'nomor_induk'    => $request->nomor_induk,
@@ -95,6 +96,20 @@ class PenggunaController extends Controller
             'successEdit' => 1,
             'nama'        => $request->nama
         ]);
+
+    //     $data = [
+    //     'nama' => $request->nama,
+    //     // data lainnya...
+    // ];
+
+    // // Hanya update password jika input password diisi
+    // if ($request->filled('password')) {
+    //     $request->validate(['password' => 'min:6|confirmed']);
+    //     $data['password'] = Hash::make($request->password);
+    // }
+
+    // $user->update($data);
+    // return redirect()->back()->with('success', 'Data diperbarui');
     }
 
     // ====== TOGGLE STATUS: Aktif/Non-Aktif ======
@@ -110,5 +125,14 @@ class PenggunaController extends Controller
             'nama'          => $user->nama,
             'aktifText'     => ($newStatus == 1 ? "aktif" : "non-aktif")
         ]);
+    }
+
+    public function destroy($id)
+    {
+        Pengguna::where('nomor_induk', $id)->delete();
+
+        return redirect()
+            ->route('pengguna.index')
+            ->with('successDelete', true);
     }
 }

@@ -108,7 +108,18 @@
                                             <td>{{ $data->lokasi ?? 'Tidak Ada' }}</td> 
                                             <td>{{ $data->aktif == 1 ? 'Aktif' : 'Non-aktif' }}</td>
                                             <td>
-                                                <a href="{{ route('pengguna.edit', $data->nomor_induk) }}"><i class="fas fa-edit"></i> Edit</a>
+                                                <a href="{{ route('pengguna.edit', $data->nomor_induk) }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-yellow">
+                                                        <i class="fas fa-trash">Edit</i>
+                                                    </button>
+                                                </a>
+                                                <form action="{{ route('pengguna.destroy', $data->nomor_induk) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash">Hapus</i>
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach

@@ -17,7 +17,12 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
+    public $timestamps = false;
     protected $table = 'pengguna'; // Nama tabel kustom Anda
+    protected $primaryKey = 'nomor_induk';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'nama',

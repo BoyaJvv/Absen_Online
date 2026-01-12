@@ -4,7 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -37,23 +37,44 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Cari user berdasarkan nomor_induk dan password MD5
-        $user = \App\Models\User::where('nomor_induk', $this->nomor_induk)
-                    ->where('password', md5($this->password))
-                    ->first();
+        $user = \App\Models\User::where('nomor_induk', $this->nomor_induk)->first();
 
+        // 1. Cek apakah user ada
         if (! $user) {
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'nomor_induk' => __('auth.failed'),
-            ]);
+            $this->sendFailedLoginResponse();
         }
 
-        // Login manual ke Laravel
-        Auth::login($user, $this->boolean('remember'));
+        // 2. Cek kecocokan password (Bcrypt atau MD5)
+        $isBcrypt = \Illuminate\Support\Facades\Hash::check($this->password, $user->password);
+        $isMd5 = ($user->password === md5($this->password));
 
-        RateLimiter::clear($this->throttleKey());
+        if ($isBcrypt || $isMd5) {
+            // Upgrade otomatis ke Bcrypt jika user masih menggunakan MD5
+            if ($isMd5) {
+                $user->update([
+                    'password' => \Illuminate\Support\Facades\Hash::make($this->password)
+                ]);
+            }
+
+            // 3. Login sekali saja
+            \Illuminate\Support\Facades\Auth::login($user, $this->boolean('remember'));
+            
+            RateLimiter::clear($this->throttleKey());
+        } else {
+            $this->sendFailedLoginResponse();
+        }
+    }
+
+    /**
+     * Helper untuk mengirim error agar kode tidak berulang (DRY)
+     */
+    protected function sendFailedLoginResponse(): void
+    {
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'nomor_induk' => __('auth.failed'),
+        ]);
     }
 
     /**
