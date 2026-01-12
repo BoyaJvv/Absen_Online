@@ -39,8 +39,7 @@ class AuthenticatedSessionController extends Controller
             
             $request->session()->regenerate();
 
-            // Redirect ke dashboard/index
-            return redirect()->intended(route('index', absolute: false));
+            return redirect()->intended(route('dashboard', absolute: false));
         }
 
         // 4. Jika gagal (user tidak ditemukan atau password salah)

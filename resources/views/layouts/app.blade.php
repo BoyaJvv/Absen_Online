@@ -44,7 +44,7 @@
             <div class="p-4 text-center border-b border-white/10">
                 <p class="text-sm opacity-80">Login sebagai</p>
                 <p class="font-semibold">
-                    {{ auth()->user()->name ?? 'User' }}
+                    {{ auth()->user()->nama ?? 'User' }}
                 </p>
             </div>
 

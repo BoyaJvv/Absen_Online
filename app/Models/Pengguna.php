@@ -6,8 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pengguna extends Model
 {
-    public $timestamps = false;
     protected $table = 'pengguna';
+    public $timestamps = false;
+
+    protected $primaryKey = 'nomor_induk';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'nomor_induk',
         'nama',
@@ -18,7 +23,28 @@ class Pengguna extends Model
         'aktif',
     ];
 
-    // public function cuti(){
-    //     return $this->belongsToMany(Cuti::class);
-    // }
+    // 🔹 Cabang / Gedung
+    public function cabangGedung()
+    {
+        return $this->belongsTo(
+            CabangGedung::class,
+            'cabang_gedung',
+            'id'
+        );
+    }
+
+    // 🔹 Absensi
+    public function absensis()
+    {
+        return $this->hasMany(
+            Absensi::class,
+            'nomor_induk',
+            'nomor_induk'
+        );
+        }
+        public function cuti(){
+            return $this->belongsToMany(Cuti::class);
+        }
 }
+
+
