@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Mesin extends Model
 {
     protected $table = 'mesin';
-    protected $primaryKey = 'idmesin';
-    public $incrementing = false; // karena string
-    protected $keyType = 'string';
     public $timestamps = false;
+
+    protected $primaryKey = 'id_mesin'; // kalau memang ada
+    public $incrementing = true;
 
     protected $fillable = [
         'idmesin',
@@ -18,7 +18,8 @@ class Mesin extends Model
         'keterangan',
     ];
 
-    public function absensi()
+    // 🔹 relasi ke absensi
+    public function absensis()
     {
         return $this->hasMany(
             Absensi::class,
