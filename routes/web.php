@@ -6,6 +6,7 @@ use App\Http\Controllers\CabangGedungController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\JabatanStatusController;
 use App\Http\Controllers\LiburKhususController;
+use App\Http\Controllers\CutiController;
 use App\Http\Controllers\AbsensiController;
 
 Route::get('/absensi', [AbsensiController::class, 'index'])
@@ -30,6 +31,18 @@ Route::get('/cabang-gedung/{id}/edit', [CabangGedungController::class, 'edit'])
 Route::put('/cabang-gedung/{id}', [CabangGedungController::class, 'update'])
     ->name('cabang-gedung.update');
 
+// cuti
+Route::get('/cuti', [CutiController::class, 'index'])
+    ->name('cuti.index');
+Route::post('/cuti', [CutiController::class, 'store'])
+    ->name('cuti.store');
+Route::delete('/cuti/{id}', [CutiController::class, 'destroy'])
+    ->name('cuti.destroy');
+Route::get('/cuti/{id}/edit', [CutiController::class, 'edit'])
+    ->name('cuti.edit');
+Route::put('/cuti/{id}', [CutiController::class, 'update'])
+    ->name('cuti.update');
+
 // libur khusus
 Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
     Route::get('/', [LiburKhususController::class, 'index'])->name('index');
@@ -40,6 +53,8 @@ Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
 
     Route::delete('/{id}', [LiburKhususController::class, 'destroy'])->name('destroy');
 });
+
+
 
 
 //jabatan
