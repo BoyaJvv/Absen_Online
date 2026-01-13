@@ -1,156 +1,175 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="utf-8">
     <title>@yield('title', 'Dashboard')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Bootstrap --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-    {{-- BOOTSLANDER INLINE CSS --}}
+    {{-- Tailwind --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
         :root {
-            --accent: #1acc8d;
-            --blue-1: #08005e;
-            --blue-2: #10058c;
-            --bg-light: #f4f5fe;
-        }
-
-        .bootslander-sidebar {
-            background: linear-gradient(180deg, var(--blue-1), var(--blue-2));
-        }
-
-        .bootslander-active {
-            background-color: var(--accent);
+            --sidebar-dark: #0f172a;
+            --sidebar-mid: #020617;
+            --accent: #2563eb;
+            --bg-main: #f8fafc;
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
-    <div class="flex min-h-screen">
+<body class="bg-[var(--bg-main)] text-gray-800">
 
-        {{-- SIDEBAR --}}
-        <aside class="w-64 text-white flex flex-col bootslander-sidebar">
+<div class="flex min-h-screen">
 
-            {{-- LOGO --}}
-            <div class="p-4 text-center border-b border-white/10">
-                <img src="{{ asset('storage/logo/neper.png') }}" class="mx-auto w-24">
-            </div>
+    {{-- SIDEBAR --}}
+    <aside id="sidebar"
+        class="w-64 bg-gradient-to-b from-[var(--sidebar-dark)] to-[var(--sidebar-mid)]
+        text-white flex flex-col transition-all duration-300">
 
-            {{-- USER --}}
-            <div class="p-4 text-center border-b border-white/10">
-                <p class="text-sm opacity-80">Login sebagai</p>
-                <p class="font-semibold">
-                    {{ auth()->user()->nama ?? 'User' }}
-                </p>
-            </div>
+        {{-- LOGO --}}
+        <div class="p-4 text-center border-b border-white/10">
+            <img src="{{ asset('storage/logo/neper.png') }}" class="mx-auto w-20">
+        </div>
 
-            {{-- MENU --}}
-            <nav class="flex-1 px-3 py-4 text-sm space-y-1">
+        {{-- USER --}}
+        <div class="px-4 py-3 border-b border-white/10 text-center">
+            <p class="text-sm opacity-70">Login sebagai</p>
+            <p class="font-semibold text-base">
+                {{ auth()->user()->nama ?? 'User' }}
+            </p>
+        </div>
 
-                <a href="{{ url('dashboard') }}"
-                    class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 bootslander-active">
-                    <i class="bi bi-speedometer2"></i>
-                    Dashboard
-                </a>
+        {{-- MENU --}}
+        <nav class="flex-1 px-2 py-4 space-y-1 text-base">
 
-                <a href="{{ url('pengguna') }}"
-                    class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
-                    <i class="bi bi-person"></i>
-                    Pengguna
-                </a>
+            @php
+                $menu = [
+                    ['Dashboard','dashboard','bi-speedometer2'],
+                    ['Pengguna','pengguna','bi-person'],
+                    ['Absensi','absensi','bi-card-checklist'],
+                    ['Cuti','cuti','bi-calendar-event'],
+                    ['Tanggal Libur','libur_khusus','bi-globe'],
+                ];
+            @endphp
 
-                <a href="{{ url('absensi') }}"
-                    class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
-                    <i class="bi bi-card-checklist"></i>
-                    Absensi
-                </a>
+            @foreach($menu as [$label,$url,$icon])
+            <a href="{{ url($url) }}"
+               class="flex items-center gap-4 px-4 py-3 rounded-lg
+               hover:bg-white/10 transition">
+                <i class="bi {{ $icon }} text-lg"></i>
+                <span class="sidebar-text">{{ $label }}</span>
+            </a>
+            @endforeach
 
-                <a href="{{ url('cuti') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
-                    <i class="bi bi-calendar-event"></i>
-                    Cuti
-                </a>
+            {{-- PENGATURAN --}}
+            <details class="group mt-2">
+                <summary class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-white/10">
+                    <span class="flex items-center gap-4">
+                        <i class="bi bi-gear text-lg"></i>
+                        <span class="sidebar-text">Pengaturan</span>
+                    </span>
+                    <i class="bi bi-chevron-down transition group-open:rotate-180 sidebar-text"></i>
+                </summary>
 
-                <a href="{{ url('libur_khusus') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
-                    <i class="bi bi-globe"></i>
-                    Tanggal Libur Khusus
-                </a>
+                <div class="ml-10 mt-2 space-y-1 text-sm">
+                    <a href="{{ url('jabatan') }}" class="block py-2 hover:text-blue-400">Jabatan</a>
+                    <a href="{{ route('cabang-gedung.index') }}" class="block py-2 hover:text-blue-400">Cabang</a>
+                </div>
+            </details>
 
-                <a href="{{ url('pages/mesin/mesin_absensi.php') }}"
-                    class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10">
-                    <i class="bi bi-hdd-network"></i>
-                    Mesin Absensi
-                </a>
+        </nav>
 
-                {{-- PENGATURAN --}}
-                <details class="group mt-1">
-                    <summary
-                        class="flex items-center justify-between px-4 py-2 rounded cursor-pointer hover:bg-white/10">
-                        <span class="flex items-center gap-3">
-                            <i class="bi bi-gear"></i>
-                            Pengaturan
-                        </span>
-                        <i class="bi bi-chevron-down transition group-open:rotate-180"></i>
-                    </summary>
+        {{-- LOGOUT --}}
+        <div class="p-4 border-t border-white/10">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg flex items-center justify-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="sidebar-text">Logout</span>
+                </button>
+            </form>
+        </div>
 
-                    <div class="ml-6 mt-1 space-y-1">
-                        <a href="{{ url('jabatan') }}" class="block px-4 py-2 rounded hover:bg-white/10">
-                            Jabatan / Status
-                        </a>
-                        <a href="{{ route('cabang-gedung.index') }}" class="block px-4 py-2 rounded hover:bg-white/10">
-                            Cabang / Gedung
-                        </a>
+    </aside>
 
-                        <a href="{{ url('pages/denda') }}" class="block px-4 py-2 rounded hover:bg-white/10">
-                            Denda
-                        </a>
-                        <a href="{{ url('pages/sistem') }}" class="block px-4 py-2 rounded hover:bg-white/10">
-                            Sistem
-                        </a>
-                    </div>
-                </details>
+    {{-- MAIN --}}
+    <div class="flex-1 flex flex-col">
 
-            </nav>
+        {{-- TOPBAR --}}
+        <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
 
-            {{-- LOGOUT --}}
-            <div class="p-4 border-t border-white/10">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button
-                        class="w-full bg-red-600 hover:bg-red-700 py-2 rounded flex items-center justify-center gap-2">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </button>
-                </form>
-            </div>
+            <div class="flex items-center gap-3">
+                {{-- Burger --}}
+                <button onclick="toggleSidebar()" class="text-xl">
+                    <i class="bi bi-list"></i>
+                </button>
 
-        </aside>
-
-        {{-- MAIN --}}
-        <div class="flex-1 flex flex-col">
-
-            {{-- NAVBAR --}}
-            <header class="bg-white shadow px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-700">
+                <h1 class="text-2xl font-semibold text-gray-700">
                     @yield('title')
                 </h1>
-            </header>
+            </div>
 
-            {{-- CONTENT --}}
-            <main class="flex-1 p-6 bg-[var(--bg-light)]">
-                @yield('content')
-            </main>
+            {{-- ACTION --}}
+            <div class="flex items-center gap-3">
+                <button onclick="toggleFocus()" class="text-xl">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+            </div>
 
-            {{-- FOOTER --}}
-            <footer class="bg-white text-center py-3 text-sm text-gray-500">
-                © {{ date('Y') }} Absensi Online
-            </footer>
+        </header>
 
-        </div>
+        {{-- CONTENT --}}
+        <main id="mainContent" class="flex-1 p-6 transition-all">
+            @yield('content')
+        </main>
+
+        {{-- FOOTER --}}
+        <footer class="bg-white text-center py-3 text-sm text-gray-500">
+            © {{ date('Y') }} Absensi Online
+        </footer>
+
     </div>
-</body>
+</div>
 
+{{-- JS --}}
+<script>
+    let collapsed = false;
+    let hidden = false;
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const texts = document.querySelectorAll('.sidebar-text');
+
+        collapsed = !collapsed;
+
+        if (collapsed) {
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-20');
+            texts.forEach(t => t.classList.add('hidden'));
+        } else {
+            sidebar.classList.add('w-64');
+            sidebar.classList.remove('w-20');
+            texts.forEach(t => t.classList.remove('hidden'));
+        }
+    }
+
+    function toggleFocus() {
+        const sidebar = document.getElementById('sidebar');
+        hidden = !hidden;
+
+        if (hidden) {
+            sidebar.classList.add('hidden');
+        } else {
+            sidebar.classList.remove('hidden');
+        }
+    }
+</script>
+
+</body>
 </html>
