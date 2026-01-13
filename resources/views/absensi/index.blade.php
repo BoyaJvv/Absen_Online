@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <h1>Laporan Absensi</h1>
 
-    <form method="POST" action="{{ route('absensi.index') }}">
+    <form method="GET" action="{{ route('absensi.index') }}">
         @csrf
 
         {{-- FILTER CABANG --}}
