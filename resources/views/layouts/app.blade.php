@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
     <title>@yield('title', 'Dashboard')</title>
 
@@ -10,7 +12,10 @@
     {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-    {{-- Tailwind --}}
+    {{-- 🔽 FALLBACK TAILWIND (WAJIB UNTUK HP / NGROK) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {{-- Tailwind Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -19,6 +24,22 @@
             --sidebar-mid: #020617;
             --accent: #2563eb;
             --bg-main: #f8fafc;
+        }
+
+        /* === RESPONSIVE PATCH (AMAN, TANPA HAPUS APAPUN) === */
+        @media (max-width: 1024px) {
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                height: 100vh;
+                width: 16rem;
+                z-index: 50;
+            }
+
+            #sidebar.show {
+                left: 0;
+            }
         }
     </style>
 </head>
@@ -55,6 +76,7 @@
                     ['Absensi','absensi','bi-card-checklist'],
                     ['Cuti','cuti','bi-calendar-event'],
                     ['Tanggal Libur','libur_khusus','bi-globe'],
+                    ['Mesin','mesin','bi-cpu'],
                 ];
             @endphp
 
@@ -98,6 +120,12 @@
 
     </aside>
 
+    {{-- OVERLAY MOBILE --}}
+    <div id="overlay"
+         onclick="toggleSidebar()"
+         class="fixed inset-0 bg-black/50 hidden z-40 lg:hidden">
+    </div>
+
     {{-- MAIN --}}
     <div class="flex-1 flex flex-col">
 
@@ -105,7 +133,6 @@
         <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
 
             <div class="flex items-center gap-3">
-                {{-- Burger --}}
                 <button onclick="toggleSidebar()" class="text-xl">
                     <i class="bi bi-list"></i>
                 </button>
@@ -115,7 +142,6 @@
                 </h1>
             </div>
 
-            {{-- ACTION --}}
             <div class="flex items-center gap-3">
                 <button onclick="toggleFocus()" class="text-xl">
                     <i class="bi bi-arrows-fullscreen"></i>
@@ -125,7 +151,7 @@
         </header>
 
         {{-- CONTENT --}}
-        <main id="mainContent" class="flex-1 p-6 transition-all">
+        <main class="flex-1 p-6 transition-all">
             @yield('content')
         </main>
 
@@ -144,30 +170,26 @@
 
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
         const texts = document.querySelectorAll('.sidebar-text');
 
-        collapsed = !collapsed;
-
-        if (collapsed) {
-            sidebar.classList.remove('w-64');
-            sidebar.classList.add('w-20');
-            texts.forEach(t => t.classList.add('hidden'));
-        } else {
-            sidebar.classList.add('w-64');
-            sidebar.classList.remove('w-20');
-            texts.forEach(t => t.classList.remove('hidden'));
+        // MOBILE MODE
+        if (window.innerWidth <= 1024) {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('hidden');
+            return;
         }
+
+        // DESKTOP MODE
+        collapsed = !collapsed;
+        sidebar.classList.toggle('w-64');
+        sidebar.classList.toggle('w-20');
+        texts.forEach(t => t.classList.toggle('hidden'));
     }
 
     function toggleFocus() {
         const sidebar = document.getElementById('sidebar');
-        hidden = !hidden;
-
-        if (hidden) {
-            sidebar.classList.add('hidden');
-        } else {
-            sidebar.classList.remove('hidden');
-        }
+        sidebar.classList.toggle('hidden');
     }
 </script>
 
