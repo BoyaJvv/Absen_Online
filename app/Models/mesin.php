@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CabangGedung;
 
 class Mesin extends Model
 {
     protected $table = 'mesin';
+    protected $primaryKey = 'id_mesin';
     public $timestamps = false;
-
-    protected $primaryKey = 'id_mesin'; // kalau memang ada
-    public $incrementing = true;
 
     protected $fillable = [
         'idmesin',
@@ -18,13 +17,13 @@ class Mesin extends Model
         'keterangan',
     ];
 
-    // 🔹 relasi ke absensi
-    public function absensis()
+    // 🔥 RELASI KE CABANG GEDUNG
+    public function cabangGedung()
     {
-        return $this->hasMany(
-            Absensi::class,
-            'idmesin',
-            'idmesin'
+        return $this->belongsTo(
+            CabangGedung::class,
+            'id_cabang_gedung',
+            'id'
         );
     }
 }

@@ -8,6 +8,14 @@ use App\Http\Controllers\JabatanStatusController;
 use App\Http\Controllers\LiburKhususController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\MesinController;
+
+Route::resource('mesin', MesinController::class);
+Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
+Route::post('/mesin', [MesinController::class, 'store'])->name('mesin.store');
+Route::get('/mesin/{id}/edit', [MesinController::class, 'edit'])->name('mesin.edit');
+Route::put('/mesin/{id}', [MesinController::class, 'update'])->name('mesin.update');
+
 
 Route::get('/absensi', [AbsensiController::class, 'index'])
     ->name('absensi.index');
@@ -77,7 +85,7 @@ Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function
     Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
 });
 
-Route::get('/dashboard', function () {
+Route::get('/', function () {
     return view('index');
 })->middleware(['auth', 'verified'])->name('index');
 
