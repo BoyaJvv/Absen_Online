@@ -20,8 +20,7 @@
 
     {{-- FILTER --}}
     <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
-        <form method="POST" action="{{ route('absensi.index') }}">
-            @csrf
+        <form method="GET" action="{{ route('absensi.index') }}">
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 
@@ -81,11 +80,13 @@
 
             <div class="mt-6 flex justify-end">
                 <button
+                    type="submit"
                     class="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3 rounded-xl shadow-lg transition">
                     <i class="bi bi-filter-circle text-xl"></i>
                     Tampilkan Data
                 </button>
             </div>
+
         </form>
     </div>
 
@@ -103,7 +104,6 @@
                         <th class="px-6 py-4 border border-slate-700">ID Mesin</th>
                     </tr>
                 </thead>
-
 
                 <tbody>
                     @forelse($absensis as $a)
@@ -146,14 +146,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6"
-                                class="text-center py-10 text-gray-500 text-lg">
+                            <td colspan="6" class="text-center py-10 text-gray-500 text-lg">
                                 <i class="bi bi-inbox text-3xl block mb-2"></i>
                                 Data tidak ditemukan
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
+
             </table>
         </div>
     </div>
