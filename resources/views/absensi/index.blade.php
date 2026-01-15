@@ -3,48 +3,10 @@
 @section('content')
 <div class="container-fluid px-5 py-6 text-[16px]">
 
-<<<<<<< HEAD
-    <form method="GET" action="{{ route('absensi.index') }}">
-        @csrf
-
-        {{-- FILTER CABANG --}}
-        <select name="cabang_gedung" class="form-control mb-2">
-    <option value="">-- Pilih Cabang --</option>
-    @foreach($cabangGedungs as $cabang)
-        <option value="{{ $cabang->id }}"
-            {{ request('cabang_gedung') == $cabang->id ? 'selected' : '' }}>
-            {{ $cabang->lokasi }}
-        </option>
-    @endforeach
-</select>
-
-        {{-- FILTER TANGGAL --}}
-        <div class="row">
-            <div class="col-md-4">
-                <input
-                    type="date"
-                    name="awal"
-                    class="form-control"
-                    value="{{ request('awal') }}"
-                    required
-                >
-            </div>
-
-            <div class="col-md-4">
-                <input
-                    type="date"
-                    name="akhir"
-                    class="form-control"
-                    value="{{ request('akhir') }}"
-                    required
-                >
-            </div>
-=======
     {{-- HEADER --}}
     <div class="mb-6 flex items-center gap-3">
         <div class="bg-blue-600 text-white p-3 rounded-xl shadow">
             <i class="bi bi-clipboard-data text-2xl"></i>
->>>>>>> 59b70f113d9fa9fca1e5535fe134043909aba53c
         </div>
         <div>
             <h1 class="text-3xl font-bold text-gray-900">
