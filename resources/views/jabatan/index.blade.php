@@ -22,8 +22,8 @@
         <div class="mb-4 flex justify-between items-center">
             <form method="GET" action="{{ route('jabatan.index') }}" class="flex gap-2">
                 <div class="relative">
-                    <input type="text" name="q" value="{{ $search ?? '' }}" placeholder="Cari jabatan..."
-                        class="border rounded pl-10 pr-3 py-2 focus:ring focus:ring-blue-200">
+                    <input type="text" name="q" id="searchInput" value="{{ $search ?? '' }}"
+                        placeholder="Cari jabatan..." class="border rounded pl-10 pr-3 py-2 focus:ring focus:ring-blue-200">
                     <span class="absolute left-3 top-2.5 text-gray-400">
                         <i class="bi bi-search"></i>
                     </span>
@@ -41,7 +41,6 @@
             </form>
         </div>
 
-
         {{-- TABLE --}}
         <div class="bg-white shadow rounded mb-8 overflow-x-auto">
             <table class="min-w-full border text-sm">
@@ -53,7 +52,7 @@
                         <th class="border px-4 py-2">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="jabatanTable">
                     @foreach ($data as $row)
                         <tr class="text-center hover:bg-gray-50">
                             <td class="border px-4 py-2">{{ $row->jabatan_status }}</td>
@@ -64,13 +63,10 @@
                                 {{ $row->aktif ? 'Aktif' : 'Non-aktif' }}
                             </td>
                             <td class="border px-4 py-2 text-center space-x-3">
-                                <a href="{{ route('jabatan.edit', $row->id) }}" class="text-blue-600 hover:text-blue-800"
-                                    title="Edit">
+                                <a href="{{ route('jabatan.edit', $row->id) }}" class="text-blue-600">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-
-                                <a href="{{ route('jabatan.toggle', $row->id) }}" class="text-red-600 hover:text-red-800"
-                                    title="Aktif / Nonaktif">
+                                <a href="{{ route('jabatan.toggle', $row->id) }}" class="text-red-600">
                                     <i class="bi bi-dash-circle"></i>
                                 </a>
                             </td>
@@ -109,3 +105,32 @@
 
     </div>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('searchInput');
+        const tableBody = document.getElementById('jabatanTable');
+
+        let timer = null;
+
+        input.addEventListener('keyup', () => {
+            clearTimeout(timer);
+
+            timer = setTimeout(() => {
+                fetch(`{{ route('jabatan.index') }}?q=${input.value}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newTbody = doc.querySelector('#jabatanTable');
+
+                        tableBody.innerHTML = newTbody.innerHTML;
+                    });
+            }, 300);
+        });
+    });
+</script>
