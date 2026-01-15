@@ -71,7 +71,7 @@
 
             @php
                 $menu = [
-                    ['Dashboard','dashboard','bi-speedometer2'],
+                    ['Dashboard','/','bi-speedometer2'],
                     ['Pengguna','pengguna','bi-person'],
                     ['Absensi','absensi','bi-card-checklist'],
                     ['Cuti','cuti','bi-calendar-event'],
