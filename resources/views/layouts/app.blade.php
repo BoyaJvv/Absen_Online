@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,152 +47,157 @@
 
 <body class="bg-[var(--bg-main)] text-gray-800">
 
-<div class="flex min-h-screen">
+    <div class="flex min-h-screen">
 
-    {{-- SIDEBAR --}}
-    <aside id="sidebar"
-        class="w-64 bg-gradient-to-b from-[var(--sidebar-dark)] to-[var(--sidebar-mid)]
+        {{-- SIDEBAR --}}
+        <aside id="sidebar"
+            class="w-64 bg-gradient-to-b from-[var(--sidebar-dark)] to-[var(--sidebar-mid)]
         text-white flex flex-col transition-all duration-300">
 
-        {{-- LOGO --}}
-        <div class="p-4 text-center border-b border-white/10">
-            <img src="{{ asset('storage/logo/neper.png') }}" class="mx-auto w-20">
-        </div>
+            {{-- LOGO --}}
+            <div class="p-4 text-center border-b border-white/10">
+                <img src="{{ asset('storage/logo/neper.png') }}" class="mx-auto w-20">
+            </div>
 
-        {{-- USER --}}
-        <div class="px-4 py-3 border-b border-white/10 text-center">
-            <p class="text-sm opacity-70">Login sebagai</p>
-            <p class="font-semibold text-base">
-                {{ auth()->user()->nama ?? 'User' }}
-            </p>
-        </div>
+            {{-- USER --}}
+            <div class="px-4 py-3 border-b border-white/10 text-center">
+                <p class="text-sm opacity-70">Login sebagai</p>
+                <p class="font-semibold text-base">
+                    {{ auth()->user()->nama ?? 'User' }}
+                </p>
+            </div>
 
-        {{-- MENU --}}
-        <nav class="flex-1 px-2 py-4 space-y-1 text-base">
+            {{-- MENU --}}
+            <nav class="flex-1 px-2 py-4 space-y-1 text-base">
 
-            @php
-                $menu = [
-                    ['Dashboard','dashboard','bi-speedometer2'],
-                    ['Pengguna','pengguna','bi-person'],
-                    ['Absensi','absensi','bi-card-checklist'],
-                    ['Cuti','cuti','bi-calendar-event'],
-                    ['Tanggal Libur','libur_khusus','bi-globe'],
-                    ['Mesin','mesin','bi-cpu'],
-                ];
-            @endphp
+                @php
+                    $menu = [
+                        ['Dashboard', 'dashboard', 'bi-speedometer2'],
+                        ['Pengguna', 'pengguna', 'bi-person'],
+                        ['Absensi', 'absensi', 'bi-card-checklist'],
+                        ['Cuti', 'cuti', 'bi-calendar-event'],
+                        ['Tanggal Libur', 'libur_khusus', 'bi-globe'],
+                        ['Mesin', 'mesin', 'bi-cpu'],
+                    ];
+                @endphp
 
-            @foreach($menu as [$label,$url,$icon])
-            <a href="{{ url($url) }}"
-               class="flex items-center gap-4 px-4 py-3 rounded-lg
+                @foreach ($menu as [$label, $url, $icon])
+                    <a href="{{ url($url) }}"
+                        class="flex items-center gap-4 px-4 py-3 rounded-lg
                hover:bg-white/10 transition">
-                <i class="bi {{ $icon }} text-lg"></i>
-                <span class="sidebar-text">{{ $label }}</span>
-            </a>
-            @endforeach
+                        <i class="bi {{ $icon }} text-lg"></i>
+                        <span class="sidebar-text">{{ $label }}</span>
+                    </a>
+                @endforeach
 
-            {{-- PENGATURAN --}}
-            <details class="group mt-2">
-                <summary class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-white/10">
-                    <span class="flex items-center gap-4">
-                        <i class="bi bi-gear text-lg"></i>
-                        <span class="sidebar-text">Pengaturan</span>
-                    </span>
-                    <i class="bi bi-chevron-down transition group-open:rotate-180 sidebar-text"></i>
-                </summary>
+                {{-- PENGATURAN --}}
+                <details class="group mt-2">
+                    <summary
+                        class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-white/10">
+                        <span class="flex items-center gap-4">
+                            <i class="bi bi-gear text-lg"></i>
+                            <span class="sidebar-text">Pengaturan</span>
+                        </span>
+                        <i class="bi bi-chevron-down transition group-open:rotate-180 sidebar-text"></i>
+                    </summary>
 
-                <div class="ml-10 mt-2 space-y-1 text-sm">
-                    <a href="{{ url('jabatan') }}" class="block py-2 hover:text-blue-400">Jabatan</a>
-                    <a href="{{ route('cabang-gedung.index') }}" class="block py-2 hover:text-blue-400">Cabang</a>
-                </div>
-            </details>
+                    <div class="ml-10 mt-2 space-y-1 text-sm">
+                        <a href="{{ url('jabatan') }}" class="block py-2 hover:text-blue-400">Jabatan</a>
+                        <a href="{{ route('cabang-gedung.index') }}" class="block py-2 hover:text-blue-400">Cabang</a>
+                    </div>
+                </details>
 
-        </nav>
+            </nav>
 
-        {{-- LOGOUT --}}
-        <div class="p-4 border-t border-white/10">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg flex items-center justify-center gap-2">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span class="sidebar-text">Logout</span>
-                </button>
-            </form>
+            {{-- LOGOUT --}}
+            <div class="p-4 border-t border-white/10">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button
+                        class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="sidebar-text">Logout</span>
+                    </button>
+                </form>
+            </div>
+
+        </aside>
+
+        {{-- OVERLAY MOBILE --}}
+        <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 hidden z-40 lg:hidden">
         </div>
 
-    </aside>
+        {{-- MAIN --}}
+        <div class="flex-1 flex flex-col">
 
-    {{-- OVERLAY MOBILE --}}
-    <div id="overlay"
-         onclick="toggleSidebar()"
-         class="fixed inset-0 bg-black/50 hidden z-40 lg:hidden">
+            {{-- TOPBAR --}}
+            <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
+
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()" class="text-xl">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <h1 class="text-2xl font-semibold text-gray-700">
+                        @yield('title')
+                    </h1>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleFocus()" class="text-xl">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+                </div>
+
+            </header>
+
+            {{-- CONTENT --}}
+            <main class="flex-1 p-6 transition-all">
+                @yield('content')
+            </main>
+
+            {{-- FOOTER --}}
+            <footer class="bg-white text-center py-3 text-sm text-gray-500">
+                © {{ date('Y') }} Absensi Online
+            </footer>
+
+            {{-- WAJIB: render semua @push('scripts') dari view --}}
+            @stack('scripts')
+
+
+        </div>
     </div>
 
-    {{-- MAIN --}}
-    <div class="flex-1 flex flex-col">
+    {{-- JS --}}
+    <script>
+        let collapsed = false;
+        let hidden = false;
 
-        {{-- TOPBAR --}}
-        <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const texts = document.querySelectorAll('.sidebar-text');
 
-            <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="text-xl">
-                    <i class="bi bi-list"></i>
-                </button>
+            // MOBILE MODE
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('hidden');
+                return;
+            }
 
-                <h1 class="text-2xl font-semibold text-gray-700">
-                    @yield('title')
-                </h1>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <button onclick="toggleFocus()" class="text-xl">
-                    <i class="bi bi-arrows-fullscreen"></i>
-                </button>
-            </div>
-
-        </header>
-
-        {{-- CONTENT --}}
-        <main class="flex-1 p-6 transition-all">
-            @yield('content')
-        </main>
-
-        {{-- FOOTER --}}
-        <footer class="bg-white text-center py-3 text-sm text-gray-500">
-            © {{ date('Y') }} Absensi Online
-        </footer>
-
-    </div>
-</div>
-
-{{-- JS --}}
-<script>
-    let collapsed = false;
-    let hidden = false;
-
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const texts = document.querySelectorAll('.sidebar-text');
-
-        // MOBILE MODE
-        if (window.innerWidth <= 1024) {
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('hidden');
-            return;
+            // DESKTOP MODE
+            collapsed = !collapsed;
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('w-20');
+            texts.forEach(t => t.classList.toggle('hidden'));
         }
 
-        // DESKTOP MODE
-        collapsed = !collapsed;
-        sidebar.classList.toggle('w-64');
-        sidebar.classList.toggle('w-20');
-        texts.forEach(t => t.classList.toggle('hidden'));
-    }
-
-    function toggleFocus() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('hidden');
-    }
-</script>
+        function toggleFocus() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+    </script>
 
 </body>
+
 </html>

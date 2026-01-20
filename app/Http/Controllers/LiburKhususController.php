@@ -9,18 +9,31 @@ class LiburKhususController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->search;
+        $awal = $request->tanggal_awal;
+        $akhir = $request->tanggal_akhir;
+        $keterangan = $request->keterangan;
 
-        $data = LiburKhusus::when($search, function ($q) use ($search) {
-            $q->where('tanggal', 'like', "%$search%")
-                ->orWhere('keterangan', 'like', "%$search%");
+        $data = LiburKhusus::when($awal && $akhir, function ($q) use ($awal, $akhir) {
+            $q->whereBetween('tanggal', [$awal, $akhir])
+                ->orderBy('tanggal', 'asc');
         })
-            ->orderBy('tanggal', 'desc')
+            ->when($awal && !$akhir, function ($q) use ($awal) {
+                $q->whereDate('tanggal', '>=', $awal)
+                    ->orderBy('tanggal', 'asc');
+            })
+            ->when($akhir && !$awal, function ($q) use ($akhir) {
+                $q->whereDate('tanggal', '<=', $akhir)
+                    ->orderBy('tanggal', 'asc');
+            })
+            ->when($keterangan, function ($q) use ($keterangan) {
+                $q->where('keterangan', 'like', "%{$keterangan}%");
+            }, function ($q) {
+                $q->orderBy('tanggal', 'desc');
+            })
             ->get();
 
-        return view('libur_khusus.index', compact('data', 'search'));
+        return view('libur_khusus.index', compact('data'));
     }
-
 
     public function store(Request $request)
     {
