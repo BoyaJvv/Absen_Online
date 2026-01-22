@@ -77,11 +77,8 @@
 
             @php
                 $menu = [
-<<<<<<< HEAD
                     ['Dashboard','/','bi-speedometer2'],
-=======
                     ['Dashboard','','bi-speedometer2'],
->>>>>>> 996e25b16326720490d86b0d09e28d5cf8579275
                     ['Pengguna','pengguna','bi-person'],
                     ['Absensi','absensi','bi-card-checklist'],
                     ['Cuti','cuti','bi-calendar-event'],
