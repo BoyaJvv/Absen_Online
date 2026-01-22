@@ -110,8 +110,11 @@
                         <tr class="hover:bg-blue-50 transition text-gray-800">
                             <td class="px-6 py-4 border font-medium">{{ $a->absen }}</td>
                             <td class="px-6 py-4 border font-semibold">
-                                {{ $a->pengguna->nama ?? '-' }}
-                            </td>
+    <a href="{{ route('absensi.pengguna', $a->nomor_induk) }}" 
+       class="text-blue-600 hover:text-blue-800 hover:underline">
+        {{ $a->pengguna->nama ?? '-' }}
+    </a>
+</td>
                             <td class="px-6 py-4 border">{{ $a->nomor_induk }}</td>
                             <td class="px-6 py-4 border">
                                 {{ $a->pengguna->cabangGedung->lokasi ?? '-' }}

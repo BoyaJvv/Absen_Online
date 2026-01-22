@@ -50,4 +50,22 @@ class Absensi extends Model
             default => '-',
         };
     }
+
+
+
+
+public function cabangGedung()
+{
+    return $this->belongsTo(CabangGedung::class, 'cabang_gedung', 'id');
+}
+
+public function jabatanStatus()
+{
+    return $this->belongsTo(JabatanStatus::class, 'jabatan_status', 'id');
+}
+
+public function absensis()
+{
+    return $this->hasMany(Absensi::class, 'nomor_induk', 'nomor_induk');
+}
 }
