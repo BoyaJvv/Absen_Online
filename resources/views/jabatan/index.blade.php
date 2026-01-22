@@ -1,136 +1,160 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 py-6">
 
-        <h1 class="text-2xl font-bold mb-6">Jabatan / Status</h1>
+{{-- ================= DATA TABLES CSS ================= --}}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
-        {{-- ALERT --}}
-        @if (session('successAdd'))
-            <div class="mb-4 rounded bg-green-100 border border-green-400 px-4 py-3 text-green-700">
-                <b>{{ session('successAdd') }}</b> sudah ditambahkan.
-            </div>
-        @endif
+<style>
+    /* DataTables Tailwind Friendly */
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #d1d5db;
+        border-radius: .5rem;
+        padding: .45rem .75rem;
+        margin-left: .5rem;
+    }
 
-        @if (session('successToggle'))
-            <div class="mb-4 rounded bg-yellow-100 border border-yellow-400 px-4 py-3 text-yellow-700">
-                Status <b>{{ session('successToggle') }}</b> menjadi <b>{{ session('aktifText') }}</b>.
-            </div>
-        @endif
+    .dataTables_wrapper .dataTables_length select {
+        border-radius: .5rem;
+        padding: .3rem .6rem;
+    }
 
-        {{-- SEARCH --}}
-        <div class="mb-4 flex justify-between items-center">
-            <form method="GET" action="{{ route('jabatan.index') }}" class="flex gap-2">
-                <div class="relative">
-                    <input type="text" name="q" id="searchInput" value="{{ $search ?? '' }}"
-                        placeholder="Cari jabatan..." class="border rounded pl-10 pr-3 py-2 focus:ring focus:ring-blue-200">
-                    <span class="absolute left-3 top-2.5 text-gray-400">
-                        <i class="bi bi-search"></i>
-                    </span>
-                </div>
+    .dt-button {
+        border-radius: .5rem !important;
+        padding: .4rem .8rem !important;
+        border: 1px solid #e5e7eb !important;
+        background: #fff !important;
+    }
 
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Cari
-                </button>
+    .dt-button:hover {
+        background: #f1f5f9 !important;
+    }
+</style>
 
-                @if (!empty($search))
-                    <a href="{{ route('jabatan.index') }}" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">
-                        Reset
-                    </a>
-                @endif
-            </form>
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+
+    {{-- ================= HEADER ================= --}}
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">Jabatan / Status</h1>
+        <p class="text-gray-500 text-sm">Kelola data jabatan dan hak akses</p>
+    </div>
+
+    {{-- ================= ALERT ================= --}}
+    @if (session('successAdd'))
+        <div class="rounded-lg border bg-green-50 border-green-200 px-4 py-3 text-green-700">
+            {{ session('successAdd') }}
         </div>
+    @endif
 
-        {{-- TABLE --}}
-        <div class="bg-white shadow rounded mb-8 overflow-x-auto">
-            <table class="min-w-full border text-sm">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border px-4 py-2">Jabatan / Status</th>
-                        <th class="border px-4 py-2">Hak Akses</th>
-                        <th class="border px-4 py-2">Aktif</th>
-                        <th class="border px-4 py-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="jabatanTable">
-                    @foreach ($data as $row)
-                        <tr class="text-center hover:bg-gray-50">
-                            <td class="border px-4 py-2">{{ $row->jabatan_status }}</td>
-                            <td class="border px-4 py-2">
-                                {{ $row->hak_akses == 1 ? 'Full' : 'General' }}
-                            </td>
-                            <td class="border px-4 py-2">
-                                {{ $row->aktif ? 'Aktif' : 'Non-aktif' }}
-                            </td>
-                            <td class="border px-4 py-2 text-center space-x-3">
-                                <a href="{{ route('jabatan.edit', $row->id) }}" class="text-blue-600">
+    @if (session('successToggle'))
+        <div class="rounded-lg border bg-yellow-50 border-yellow-200 px-4 py-3 text-yellow-700">
+            Status <b>{{ session('successToggle') }}</b> menjadi <b>{{ session('aktifText') }}</b>
+        </div>
+    @endif
+
+    {{-- ================= TABLE ================= --}}
+    <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
+        <table id="datatableJabatan" class="min-w-full text-sm">
+            <thead class="bg-slate-800 text-white">
+                <tr>
+                    <th class="px-4 py-3">Jabatan / Status</th>
+                    <th class="px-4 py-3">Hak Akses</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                @foreach ($data as $row)
+                    <tr class="hover:bg-slate-50 transition text-center">
+                        <td class="px-4 py-3">{{ $row->jabatan_status }}</td>
+                        <td class="px-4 py-3">
+                            {{ $row->hak_akses == 1 ? 'Full' : 'General' }}
+                        </td>
+                        <td class="px-4 py-3">
+                            {{ $row->aktif ? 'Aktif' : 'Non-aktif' }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex justify-center gap-3">
+                                <a href="{{ route('jabatan.edit', $row->id) }}"
+                                    class="text-blue-600 hover:text-blue-800">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <a href="{{ route('jabatan.toggle', $row->id) }}" class="text-red-600">
+
+                                <a href="{{ route('jabatan.toggle', $row->id) }}"
+                                    class="text-red-600 hover:text-red-800"
+                                    onclick="return confirm('Ubah status jabatan ini?')">
                                     <i class="bi bi-dash-circle"></i>
                                 </a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        {{-- FORM TAMBAH --}}
-        <div class="bg-white shadow rounded p-6">
-            <h3 class="text-lg font-semibold mb-4">Data Baru</h3>
-
-            <form method="POST" action="{{ route('jabatan.store') }}">
-                @csrf
-
-                <div class="mb-4">
-                    <label class="block mb-1 font-medium">Jabatan / Status</label>
-                    <input type="text" name="jabatan_status"
-                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200" required>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block mb-1 font-medium">Hak Akses</label>
-                    <select name="hak_akses" class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                        <option value="1">Full</option>
-                        <option value="2">General</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Tambah
-                </button>
-            </form>
-        </div>
-
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-@endsection
+
+    {{-- ================= FORM TAMBAH ================= --}}
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Tambah Jabatan / Status</h3>
+
+        <form method="POST" action="{{ route('jabatan.store') }}" class="grid md:grid-cols-2 gap-6">
+            @csrf
+
+            <div>
+                <label class="block mb-2 font-medium">Jabatan / Status</label>
+                <input type="text" name="jabatan_status"
+                    class="w-full rounded-xl border px-4 py-3" required>
+            </div>
+
+            <div>
+                <label class="block mb-2 font-medium">Hak Akses</label>
+                <select name="hak_akses"
+                    class="w-full rounded-xl border px-4 py-3">
+                    <option value="1">Full</option>
+                    <option value="2">General</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-2 flex justify-end">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+{{-- ================= JS ================= --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const input = document.getElementById('searchInput');
-        const tableBody = document.getElementById('jabatanTable');
-
-        let timer = null;
-
-        input.addEventListener('keyup', () => {
-            clearTimeout(timer);
-
-            timer = setTimeout(() => {
-                fetch(`{{ route('jabatan.index') }}?q=${input.value}`, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(res => res.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newTbody = doc.querySelector('#jabatanTable');
-
-                        tableBody.innerHTML = newTbody.innerHTML;
-                    });
-            }, 300);
-        });
+$(document).ready(function () {
+    $('#datatableJabatan').DataTable({
+        pageLength: 8,
+        searching: true,
+        destroy: true,
+        dom: 'Bftip',
+        buttons: ['copy', 'excel', 'pdf', 'print', 'colvis'],
+        language: {
+            search: 'Cari:',
+            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+            paginate: {
+                previous: '‹',
+                next: '›'
+            }
+        }
     });
+});
 </script>
+
+@endsection
