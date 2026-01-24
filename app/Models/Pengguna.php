@@ -32,6 +32,14 @@ class Pengguna extends Model
             'id'
         );
     }
+    public function jabatanStatus()
+    {
+        return $this->belongsTo(
+            JabatanStatus::class,
+            'jabatan_status',
+            'id'
+        );
+    }
 
     // 🔹 Absensi
     public function absensis()
@@ -45,6 +53,27 @@ class Pengguna extends Model
         public function cuti(){
             return $this->belongsToMany(Cuti::class);
         }
+
+        public function pengguna()
+    {
+        return $this->belongsTo(Pengguna::class, 'nomor_induk', 'nomor_induk');
+    }
+
+    public function mesin()
+    {
+        return $this->belongsTo(Mesin::class, 'idmesin', 'idmesin');
+    }
+
+    public function getKategoriLabelAttribute()
+    {
+        return match ((int)$this->kategori) {
+            1 => 'Masuk',
+            2 => 'Mulai Istirahat',
+            3 => 'Selesai Istirahat',
+            4 => 'Pulang',
+            default => '-',
+        };
+    }
 }
 
 
