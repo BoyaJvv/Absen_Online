@@ -59,7 +59,11 @@
                         {{ $j->jam_masuk }} - {{ $j->jam_pulang }}
                         <br>
                         <small class="text-gray-500">
-                            Istirahat {{ $j->istirahat1_mulai }} - {{ $j->istirahat1_selesai }}
+                            Istirahat 1 {{ $j->istirahat1_mulai }} - {{ $j->istirahat1_selesai }}
+                        </small>
+                        <br>
+                        <small class="text-gray-500">
+                            Istirahat 2 {{ $j->istirahat2_mulai }} - {{ $j->istirahat2_selesai }}
                         </small>
                     </span>
                 @endif
@@ -90,7 +94,8 @@
     <th class="border p-2">Hari</th>
     <th class="border p-2">Masuk</th>
     <th class="border p-2">Pulang</th>
-    <th class="border p-2">Istirahat</th>
+    <th class="border p-2 w-32">Istirahat 1</th>
+    <th class="border p-2 w-32">Istirahat 2</th>
     <th class="border p-2">Libur</th>
 </tr>
 </thead>
@@ -105,8 +110,16 @@
     <input type="time" name="jadwal[{{ $hari }}][jam_pulang]" class="border rounded w-full">
 </td>
 <td class="border p-2 flex gap-1">
-    <input type="time" name="jadwal[{{ $hari }}][istirahat_mulai]" class="border rounded w-1/2">
-    <input type="time" name="jadwal[{{ $hari }}][istirahat_selesai]" class="border rounded w-1/2">
+    <input type="time" name="jadwal[{{ $hari }}][istirahat1_mulai]" class="border rounded w-1/2">
+    <input type="time" name="jadwal[{{ $hari }}][istirahat1_selesai]" class="border rounded w-1/2">
+</td>
+<td class="border p-2">
+    <div class="flex flex-col md:flex-row gap-1">
+        <input type="time" name="jadwal[{{ $hari }}][istirahat2_mulai]" 
+               class="border rounded w-full text-xs p-1">
+        <input type="time" name="jadwal[{{ $hari }}][istirahat2_selesai]" 
+               class="border rounded w-full text-xs p-1">
+    </div>
 </td>
 <td class="border p-2 text-center">
     <input type="checkbox" name="jadwal[{{ $hari }}][libur]">

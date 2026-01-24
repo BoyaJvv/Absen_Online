@@ -143,12 +143,6 @@
                     </h1>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleFocus()" class="text-xl">
-                        <i class="bi bi-arrows-fullscreen"></i>
-                    </button>
-                </div>
-
             </header>
 
             {{-- CONTENT --}}
