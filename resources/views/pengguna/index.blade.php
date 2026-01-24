@@ -1,10 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-6">
 
-    {{-- HEADER --}}
-    <div class="flex items-center justify-between mb-6">
+{{-- ================= DATA TABLES CSS ================= --}}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+<style>
+/* DataTables Tailwind Friendly */
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #d1d5db;
+    border-radius: .5rem;
+    padding: .45rem .75rem;
+    margin-left: .5rem;
+}
+.dataTables_wrapper .dataTables_length select {
+    border-radius: .5rem;
+    padding: .3rem .6rem;
+}
+.dt-button {
+    border-radius: .5rem !important;
+    padding: .4rem .8rem !important;
+    border: 1px solid #e5e7eb !important;
+    background: #fff !important;
+}
+.dt-button:hover {
+    background: #f1f5f9 !important;
+}
+</style>
+
+<div class="p-6 space-y-6">
+
+    {{-- ================= HEADER ================= --}}
+    <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold text-gray-800">Pengguna</h1>
 
         <div class="flex gap-2">
@@ -22,42 +50,39 @@
         </div>
     </div>
 
-    {{-- SEARCH --}}
-    <div class="mb-4 w-full md:w-1/3 relative">
-        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input id="searchInput" type="text"
-            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring focus:ring-blue-200"
-            placeholder="Cari pengguna...">
-    </div>
-
-    {{-- TABLE --}}
-    <div class="bg-white rounded-xl shadow overflow-x-auto">
-        <table class="min-w-full text-sm">
+    {{-- ================= TABLE CARD ================= --}}
+    <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+        <table id="penggunaTable" class="min-w-full text-sm">
             <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
                 <tr>
-                    <th class="px-4 py-3 text-left">Nomor Induk</th>
-                    <th class="px-4 py-3 text-left">Nama</th>
-                    <th class="px-4 py-3 text-left">Jabatan</th>
-                    <th class="px-4 py-3 text-left">Lokasi</th>
-                    <th class="px-4 py-3 text-center">Status</th>
-                    <th class="px-4 py-3 text-center">Aksi</th>
+                    <th>Nomor Induk</th>
+                    <th>Nama</th>
+                    <th>Jabatan</th>
+                    <th>Lokasi</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody id="tableBody" class="divide-y">
+            <tbody class="divide-y">
                 @foreach($pengguna as $data)
                 @if($data->nomor_induk == 0) @continue @endif
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">{{ $data->nomor_induk }}</td>
-                    <td class="px-4 py-3">{{ $data->nama }}</td>
-                    <td class="px-4 py-3">{{ $data->jabatan_status ?? '-' }}</td>
-                    <td class="px-4 py-3">{{ $data->lokasi ?? '-' }}</td>
-                    <td class="px-4 py-3 text-center">
+                    <td>{{ $data->nomor_induk }}</td>
+                    <td>
+                        <a href="{{ route('absensi.pengguna', $data->nomor_induk) }}"
+                         class="text-blue-600 hover:text-blue-800 hover:underline">
+                        {{ $data->nama }}
+                        </a>
+                    </td>
+                    <td>{{ $data->jabatan_status ?? '-' }}</td>
+                    <td>{{ $data->lokasi ?? '-' }}</td>
+                    <td class="text-center">
                         <span class="px-3 py-1 text-xs rounded-full
                             {{ $data->aktif ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                             {{ $data->aktif ? 'Aktif' : 'Nonaktif' }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center space-x-2">
+                    <td class="text-center space-x-2">
                         <button onclick="openModal('{{ route('pengguna.edit',$data->nomor_induk) }}')"
                             class="px-3 py-1 border border-yellow-400 text-yellow-600 rounded hover:bg-yellow-50">
                             <i class="bi bi-pencil"></i>
@@ -79,24 +104,9 @@
         </table>
     </div>
 
-    {{-- PAGINATION --}}
-    <div class="flex justify-between items-center mt-4">
-        <button id="prevPage"
-            class="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50">
-            <i class="bi bi-arrow-left"></i> Previous
-        </button>
-
-        <span id="pageInfo" class="text-sm text-gray-600"></span>
-
-        <button id="nextPage"
-            class="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50">
-            Next <i class="bi bi-arrow-right"></i>
-        </button>
-    </div>
-
 </div>
 
-{{-- MODAL --}}
+{{-- ================= MODAL ================= --}}
 <div id="modal"
     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg">
@@ -110,54 +120,41 @@
     </div>
 </div>
 
-{{-- SCRIPT --}}
+{{-- ================= JS ================= --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
 <script>
-const rows = Array.from(document.querySelectorAll('#tableBody tr'));
-const rowsPerPage = 8;
-let currentPage = 1;
-
-function renderTable(filteredRows = rows) {
-    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    rows.forEach(r => r.style.display = 'none');
-    filteredRows.slice(start, end).forEach(r => r.style.display = '');
-
-    document.getElementById('pageInfo').innerText =
-        `Halaman ${currentPage} dari ${totalPages || 1}`;
-
-    document.getElementById('prevPage').disabled = currentPage === 1;
-    document.getElementById('nextPage').disabled = currentPage === totalPages;
-}
-
-let filteredRows = rows;
-renderTable();
-
-document.getElementById('searchInput').addEventListener('keyup', function () {
-    const keyword = this.value.toLowerCase();
-    filteredRows = rows.filter(row =>
-        row.innerText.toLowerCase().includes(keyword)
-    );
-    currentPage = 1;
-    renderTable(filteredRows);
+$(function () {
+    $('#penggunaTable').DataTable({
+        responsive: true,
+        pageLength: 8,
+        dom: 'Bfrtip',
+        buttons: [
+            'copy', 'excel', 'pdf', 'print', 'colvis'
+        ],
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            paginate: {
+                previous: "‹",
+                next: "›"
+            }
+        }
+    });
 });
 
-document.getElementById('prevPage').onclick = () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderTable(filteredRows);
-    }
-};
-
-document.getElementById('nextPage').onclick = () => {
-    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        renderTable(filteredRows);
-    }
-};
-
+// MODAL
 function openModal(url) {
     document.getElementById('modal').classList.remove('hidden');
     document.getElementById('modal').classList.add('flex');
@@ -173,4 +170,5 @@ function closeModal() {
     document.getElementById('modalContent').innerHTML = '';
 }
 </script>
+
 @endsection

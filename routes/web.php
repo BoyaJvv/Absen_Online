@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\MesinController;
+use App\Http\Controllers\AbsensiPenggunaController;
 
 Route::resource('mesin', MesinController::class);
 Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
@@ -26,7 +27,9 @@ Route::post('/absensi', [AbsensiController::class, 'store'])
     ->name('absensi.store');
 Route::get('/absensi-mesin', [AbsensiController::class, 'byMesin'])
     ->name('absensi.mesin');
-
+Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'show'])
+    ->name('absensi.pengguna');
 
 // Cabang dan Gedung Routes
 Route::get('/cabang-gedung', [CabangGedungController::class, 'index'])
