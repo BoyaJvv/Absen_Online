@@ -1,0 +1,51 @@
+{{-- resources/views/dashboard/index.blade.php --}}
+
+@extends('layouts.app')
+
+@section('content')
+
+<div class="container">
+
+<form method="GET">
+    <select name="cabangGedung" onchange="this.form.submit()">
+        <option value="">-- Semua Cabang --</option>
+        @foreach ($cabangGedungList as $cabang)
+            <option value="{{ $cabang->id }}"
+                {{ $cabangGedungId == $cabang->id ? 'selected' : '' }}>
+                {{ $cabang->lokasi }}
+            </option>
+        @endforeach
+    </select>
+</form>
+
+<canvas id="attendanceChart"></canvas>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const tepatWaktu = @json($tepatWaktu);
+const terlambat  = @json($terlambat);
+const lokasiCabang = "{{ $lokasiCabang }}";
+
+new Chart(document.getElementById('attendanceChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        datasets: [
+            { label: 'Tepat Waktu', data: tepatWaktu },
+            { label: 'Terlambat', data: terlambat }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Grafik Absensi - ' + lokasiCabang
+            }
+        }
+    }
+});
+</script>
+@endsection

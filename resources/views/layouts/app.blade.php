@@ -69,7 +69,8 @@
         <nav class="flex-1 px-2 py-4 space-y-1 text-base">
             @php
                 $menu = [
-                    ['Dashboard','/','bi-speedometer2'],
+                    // ['Dashboard','/','bi-speedometer2'],
+                     ['Dashboard','dashboard','bi-speedometer2'],
                     ['Pengguna','pengguna','bi-person'],
                     ['Absensi','absensi','bi-card-checklist'],
                     ['Cuti','cuti','bi-calendar-event'],
@@ -98,6 +99,7 @@
                 <div class="ml-10 mt-2 space-y-1 text-sm">
                     <a href="{{ url('jabatan') }}" class="block py-2 hover:text-blue-400">Jabatan</a>
                     <a href="{{ route('cabang-gedung.index') }}" class="block py-2 hover:text-blue-400">Cabang</a>
+                    <a href="{{ route('denda.index') }}" class="block py-2 hover:text-blue-400">Denda</a>
                 </div>
             </details>
         </nav>

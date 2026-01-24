@@ -11,6 +11,20 @@ use App\Http\Controllers\CutiController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\MesinController;
 use App\Http\Controllers\AbsensiPenggunaController;
+use App\Http\Controllers\DendaController;
+
+// routes/web.php
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+
+
+
+Route::prefix('pengaturan')->middleware(['auth'])->group(function () {
+    Route::get('denda', [DendaController::class, 'index'])->name('denda.index');
+    Route::get('denda/{id}/edit', [DendaController::class, 'edit'])->name('denda.edit');
+    Route::put('denda/{id}', [DendaController::class, 'update'])->name('denda.update');
+});
+
 
 Route::resource('mesin', MesinController::class);
 Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
