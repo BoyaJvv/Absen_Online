@@ -11,12 +11,29 @@ class JadwalHarian extends Model
     protected $fillable = [
         'cabang_gedung_id',
         'hari',
+        'libur',
         'jam_masuk',
         'jam_pulang',
         'istirahat1_mulai',
         'istirahat1_selesai',
-        'keterangan',
+        'istirahat2_mulai',
+        'istirahat2_selesai',
+    ];
+
+    protected $casts = [
+        'libur' => 'boolean', // agar di PHP otomatis jadi true/false
     ];
 
     public $timestamps = false;
+
+    public function cabangGedung()
+    {
+        return $this->belongsTo(CabangGedung::class, 'cabang_gedung_id');
+    }
+
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class, 'jadwal_harian_id');
+    }
 }
+    

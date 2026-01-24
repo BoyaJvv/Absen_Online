@@ -6,6 +6,7 @@ use App\Http\Controllers\CabangGedungController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\JabatanStatusController;
 use App\Http\Controllers\LiburKhususController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\MesinController;
@@ -88,11 +89,7 @@ Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function
     Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
 });
 
-
-
-Route::get('/', function () {
-    return view('index');
-})->middleware(['auth', 'verified'])->name('index');
+Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('index');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

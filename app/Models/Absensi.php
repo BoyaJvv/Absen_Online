@@ -10,16 +10,21 @@ class Absensi extends Model
 
     protected $fillable = [
         'nomor_induk',
-        'absen',
-        'absen_maks',
+        'jadwal_harian_id',
         'kategori',
         'idmesin'
     ];
 
-    protected $casts = [
-        'absen' => 'datetime',
-        'absen_maks' => 'datetime',
-    ];
+    // File: app/Models/Absensi.php
+    public function jadwalHarian()
+    {
+        return $this->belongsTo(JadwalHarian::class, 'jadwal_harian_id');
+    }
+
+    // protected $casts = [
+    //     'absen_at' => 'datetime',
+    //     'absen_maks' => 'datetime',
+    // ];
 
     public function pengguna()
     {
@@ -40,32 +45,21 @@ class Absensi extends Model
     }
 
     // 🔹 Label kategori
-    public function getKategoriLabelAttribute()
-    {
-        return match ($this->kategori) {
-            1 => 'Masuk',
-            2 => 'Mulai Istirahat',
-            3 => 'Selesai Istirahat',
-            4 => 'Pulang',
-            default => '-',
-        };
-    }
+    // cont biar langsung panggil di controller
+    
+    // const KATEGORI_MASUK = 1;
+    // const KATEGORI_ISTIRAHAT1 = 2;
+    // const KATEGORI_ISTIRAHAT2 = 3;
+    // const KATEGORI_PULANG = 4;
 
-
-
-
-public function cabangGedung()
-{
-    return $this->belongsTo(CabangGedung::class, 'cabang_gedung', 'id');
-}
-
-public function jabatanStatus()
-{
-    return $this->belongsTo(JabatanStatus::class, 'jabatan_status', 'id');
-}
-
-public function absensis()
-{
-    return $this->hasMany(Absensi::class, 'nomor_induk', 'nomor_induk');
-}
+    // public function getKategoriLabelAttribute()
+    // {
+    //     return match ($this->kategori) {
+    //         1 => 'Masuk',
+    //         2 => 'Mulai Istirahat',
+    //         3 => 'Selesai Istirahat',
+    //         4 => 'Pulang',
+    //         default => '-',
+    //     };
+    // }
 }

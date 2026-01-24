@@ -29,7 +29,6 @@
             --bg-main: #f8fafc;
         }
 
-        /* === RESPONSIVE PATCH === */
         @media (max-width: 1024px) {
             #sidebar {
                 position: fixed;
@@ -56,12 +55,10 @@
         class="w-64 bg-gradient-to-b from-[var(--sidebar-dark)] to-[var(--sidebar-mid)]
         text-white flex flex-col transition-all duration-300">
 
-        {{-- LOGO --}}
         <div class="p-4 text-center border-b border-white/10">
             <img src="{{ asset('storage/logo/neper.png') }}" class="mx-auto w-20">
         </div>
 
-        {{-- USER --}}
         <div class="px-4 py-3 border-b border-white/10 text-center">
             <p class="text-sm opacity-70">Login sebagai</p>
             <p class="font-semibold text-base">
@@ -69,7 +66,6 @@
             </p>
         </div>
 
-        {{-- MENU --}}
         <nav class="flex-1 px-2 py-4 space-y-1 text-base">
             @php
                 $menu = [
@@ -90,10 +86,8 @@
                 </a>
             @endforeach
 
-            {{-- PENGATURAN --}}
             <details class="group mt-2">
-                <summary
-                    class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-white/10">
+                <summary class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-white/10">
                     <span class="flex items-center gap-4">
                         <i class="bi bi-gear text-lg"></i>
                         <span class="sidebar-text">Pengaturan</span>
@@ -108,12 +102,10 @@
             </details>
         </nav>
 
-        {{-- LOGOUT --}}
         <div class="p-4 border-t border-white/10">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button
-                    class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg flex items-center justify-center gap-2">
+                <button class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg flex items-center justify-center gap-2">
                     <i class="bi bi-box-arrow-right"></i>
                     <span class="sidebar-text">Logout</span>
                 </button>
@@ -121,14 +113,10 @@
         </div>
     </aside>
 
-    {{-- OVERLAY MOBILE --}}
-    <div id="overlay" onclick="toggleSidebar()"
-         class="fixed inset-0 bg-black/50 hidden z-40 lg:hidden"></div>
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 hidden z-40 lg:hidden"></div>
 
-    {{-- MAIN --}}
     <div class="flex-1 flex flex-col">
 
-        {{-- TOPBAR --}}
         <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="text-xl">
@@ -144,23 +132,18 @@
             </button>
         </header>
 
-        {{-- CONTENT --}}
         <main class="flex-1 p-6 transition-all">
             @yield('content')
         </main>
 
-        {{-- FOOTER --}}
         <footer class="bg-white text-center py-3 text-sm text-gray-500">
             © {{ date('Y') }} Absensi Online
         </footer>
 
-        {{-- Render script tambahan --}}
         @stack('scripts')
-
     </div>
 </div>
 
-{{-- JS --}}
 <script>
     let collapsed = false;
 
