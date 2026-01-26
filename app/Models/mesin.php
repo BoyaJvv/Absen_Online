@@ -8,7 +8,8 @@ use App\Models\CabangGedung;
 class Mesin extends Model
 {
     protected $table = 'mesin';
-    protected $primaryKey = 'id_mesin';
+    protected $primaryKey = 'idmesin';
+    public $incrementing = false;
     public $timestamps = false;
 
     protected $fillable = [

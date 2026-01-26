@@ -89,11 +89,12 @@
                 <table class="w-full text-base border-collapse">
                     <thead class="bg-slate-800 text-slate-100">
                         <tr>
-                            <th class="px-6 py-4 border border-slate-700">Absen</th>
+                            <th class="px-6 py-4 border border-slate-700">Waktu Absen</th>
                             <th class="px-6 py-4 border border-slate-700">Nama</th>
                             <th class="px-6 py-4 border border-slate-700">Nomor Induk</th>
                             <th class="px-6 py-4 border border-slate-700">Cabang</th>
                             <th class="px-6 py-4 border border-slate-700">Kategori</th>
+                            <th class="px-6 py-4 border border-slate-700">Status</th>
                             <th class="px-6 py-4 border border-slate-700">ID Mesin</th>
                         </tr>
                     </thead>
@@ -101,7 +102,7 @@
                     <tbody>
                         @forelse($absensis as $a)
                             <tr class="hover:bg-blue-50 transition text-gray-800">
-                                <td class="px-6 py-4 border font-medium">{{ $a->absen }}</td>
+                                <td class="px-6 py-4 border font-medium">{{ $a->display_absen ?? ($a->absen_at ?? '-') }}</td>
                                 <td class="px-6 py-4 border font-semibold">
                                     <a href="{{ route('absensi.pengguna', $a->nomor_induk) }}"
                                         class="text-blue-600 hover:text-blue-800 hover:underline">
@@ -142,11 +143,25 @@
                                             -
                                     @endswitch
                                 </td>
+                                <td class="px-6 py-4 border text-center">
+                                    @if(!empty($a->status_label))
+                                        <span class="px-3 py-1 rounded-full font-semibold {{ $a->warna ?? '' }}">
+                                            {{ $a->status_label }}
+                                        </span>
+                                    @elseif(is_null($a->status))
+                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
+                                    @elseif($a->status === 'tepat')
+                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">Tepat</span>
+                                    @else
+                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">Telat</span>
+                                    @endif
+                                </td>
+
                                 <td class="px-6 py-4 border">{{ $a->idmesin }}</td>
                             </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-10 text-gray-500 text-lg">
+                                    <td colspan="7" class="text-center py-10 text-gray-500 text-lg">
                                         <i class="bi bi-inbox text-3xl block mb-2"></i>
                                         Data tidak ditemukan
                                     </td>

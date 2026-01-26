@@ -234,65 +234,35 @@
                     @endphp
                     
                     @forelse($absensisPaginated as $absensi)
-                        @php
-                            // Hitung selisih seperti sistem lama
-                            $selisih = abs(strtotime($absensi->absen) - strtotime($absensi->absen_maks));
-                            $selisihMenit = round($selisih / 60);
-                            
-                            if ($absensi->kategori == '1') {
-                                $kategori = 'Masuk';
-                                $status = $absensi->absen > $absensi->absen_maks ? 'Terlambat' : 'Tepat Waktu';
-                                $warna = $status == 'Terlambat' ? 'text-red-600' : 'text-green-600';
-                            } elseif ($absensi->kategori == '2') {
-                                $kategori = 'Mulai Istirahat';
-                                $status = $absensi->absen > $absensi->absen_maks ? 'Tepat Waktu' : 'Terlalu Cepat';
-                                $warna = $status == 'Terlalu Cepat' ? 'text-red-600' : 'text-green-600';
-                            } elseif ($absensi->kategori == '3') {
-                                $kategori = 'Selesai Istirahat';
-                                $status = $absensi->absen > $absensi->absen_maks ? 'Terlalu Cepat' : 'Tepat Waktu';
-                                $warna = $status == 'Terlalu Cepat' ? 'text-red-600' : 'text-green-600';
-                            } elseif ($absensi->kategori == '4') {
-                                $kategori = 'Pulang';
-                                $status = $absensi->absen > $absensi->absen_maks ? 'Tepat Waktu' : 'Terlalu Cepat';
-                                $warna = $status == 'Terlalu Cepat' ? 'text-red-600' : 'text-green-600';
-                            }
-                            
-                            // Zona waktu
-                            $zona = $cabang->zona_waktu ?? '1';
-                            if ($zona == '1') {
-                                $zonaWaktu = 'WIB';
-                                $seconds = 25200;
-                            } elseif ($zona == '2') {
-                                $zonaWaktu = 'WITA';
-                                $seconds = 28800;
-                            } else {
-                                $zonaWaktu = 'WIT';
-                                $seconds = 32400;
-                            }
-                        @endphp
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 border {{ $warna }}">
-                                {{ \Carbon\Carbon::parse($absensi->absen)->addSeconds($seconds)->format('Y-m-d H:i:s') }} {{ $zonaWaktu }}
-                            </td>
-                            <td class="px-6 py-4 border">
-                                {{ \Carbon\Carbon::parse($absensi->absen_maks)->addSeconds($seconds)->format('Y-m-d H:i:s') }}
-                            </td>
-                            <td class="px-6 py-4 border {{ $warna }}">
-                                {{ $selisihMenit }} Menit
-                            </td>
-                            <td class="px-6 py-4 border {{ $warna }}">
-                                {{ $status }}
-                            </td>
-                            <td class="px-6 py-4 border">
-                                {{ $cabang->lokasi ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 border">
-                                {{ $kategori }}
-                            </td>
-                            <td class="px-6 py-4 border">
-                                {{ $absensi->idmesin }}
-                            </td>
-                        </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 border {{ $absensi->warna }}">
+                                    {{ $absensi->display_absen ?? ($absensi->absen_at ?? '-') }}
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $absensi->display_batas ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 border {{ $absensi->warna }}">
+                                    {{ $absensi->selisih_menit !== null ? $absensi->selisih_menit . ' Menit' : '-' }}
+                                </td>
+                                <td class="px-6 py-4 border text-center">
+                                    @if(is_null($absensi->status))
+                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
+                                    @elseif(($absensi->status ?? '') === 'tepat')
+                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">{{ $absensi->status_label ?? 'Tepat Waktu' }}</span>
+                                    @else
+                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">{{ $absensi->status_label ?? 'Terlambat' }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $cabang->lokasi ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $absensi->kategori_label ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $absensi->idmesin }}
+                                </td>
+                            </tr>
                     @empty
                         <tr>
                             <td colspan="7" class="text-center py-8 text-gray-500">

@@ -14,6 +14,7 @@ class Absensi extends Model
         'kategori',
         'idmesin'
     ];
+    
 
     // File: app/Models/Absensi.php
     public function jadwalHarian()
@@ -21,9 +22,25 @@ class Absensi extends Model
         return $this->belongsTo(JadwalHarian::class, 'jadwal_harian_id');
     }
 
-    // protected $casts = [
+    // Many-to-many: an attendance can be linked to multiple jadwal_harian (pivot)
+    public function jadwalHarians()
+    {
+        return $this->belongsToMany(
+            JadwalHarian::class,
+            'absensi_jadwal_harian',
+            'absensi_id',
+            'jadwal_harian_id'
+        );
+    }
+
+    // Helper to get primary jadwal (first related jadwal, fallback to jadwalHarian column)
+    public function getPrimaryJadwalAttribute()
+    {
+        $first = $this->jadwalHarians()->first();
+        if ($first) return $first;
+        return $this->jadwalHarian; // fallback to single-column relation
+    }
     //     'absen_at' => 'datetime',
-    //     'absen_maks' => 'datetime',
     // ];
 
     public function pengguna()

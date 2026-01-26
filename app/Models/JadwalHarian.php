@@ -35,5 +35,16 @@ class JadwalHarian extends Model
     {
         return $this->hasMany(Absensi::class, 'jadwal_harian_id');
     }
+
+    // Many-to-many: jadwal_harian can be related to multiple absensi via pivot
+    public function absensisMany()
+    {
+        return $this->belongsToMany(
+            Absensi::class,
+            'absensi_jadwal_harian',
+            'jadwal_harian_id',
+            'absensi_id'
+        );
+    }
 }
     

@@ -103,7 +103,7 @@ Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function
     Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
 });
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('index');
+Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard.index');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

@@ -24,6 +24,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+const labels = @json($labels ?? []);
 const tepatWaktu = @json($tepatWaktu);
 const terlambat  = @json($terlambat);
 const lokasiCabang = "{{ $lokasiCabang }}";
@@ -31,10 +32,10 @@ const lokasiCabang = "{{ $lokasiCabang }}";
 new Chart(document.getElementById('attendanceChart'), {
     type: 'bar',
     data: {
-        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        labels: labels,
         datasets: [
-            { label: 'Tepat Waktu', data: tepatWaktu },
-            { label: 'Terlambat', data: terlambat }
+            { label: 'Tepat Waktu', data: tepatWaktu, backgroundColor: 'rgba(34,197,94,0.7)' },
+            { label: 'Terlambat', data: terlambat, backgroundColor: 'rgba(239,68,68,0.7)' }
         ]
     },
     options: {
