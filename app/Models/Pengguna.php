@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Pengguna extends Model
+class Pengguna extends Authenticatable
 {
+    use Notifiable;
+
     protected $table = 'pengguna';
     public $timestamps = false;
 
@@ -23,6 +26,17 @@ class Pengguna extends Model
         'aktif',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
+
     // 🔹 Cabang / Gedung
     public function cabangGedung()
     {
@@ -32,6 +46,8 @@ class Pengguna extends Model
             'id'
         );
     }
+
+    // 🔹 Jabatan Status
     public function jabatanStatus()
     {
         return $this->belongsTo(
@@ -51,11 +67,13 @@ class Pengguna extends Model
         );
     }
 
+    // 🔹 Cuti
     public function cuti()
     {
-        return $this->hasMany(Cuti::class, 'nomor_induk', 'nomor_induk');
+        return $this->hasMany(
+            Cuti::class,
+            'nomor_induk',
+            'nomor_induk'
+        );
     }
-
 }
-
-

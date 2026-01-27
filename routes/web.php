@@ -8,14 +8,37 @@ use App\Http\Controllers\JabatanStatusController;
 use App\Http\Controllers\LiburKhususController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CutiController;
-use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\MesinController;
+use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AbsensiPenggunaController;
 use App\Http\Controllers\DendaController;
 
-// routes/web.php
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->name('dashboard');
+
+// ================= ADMIN =================
+Route::get('/absensi', [AbsensiController::class, 'index'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('absensi.index');
+
+// ADMIN lihat rekap orang tertentu
+Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'rekap'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('absensi.pengguna.detail');
+
+// ================= USER =================
+// USER lihat rekap DIRI SENDIRI
+Route::get('/absensi/pengguna', [AbsensiPenggunaController::class, 'rekapSaya'])
+    ->middleware('auth')
+    ->name('absensi.pengguna.saya');
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])
+        ->name('dashboard.index');
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+});
+
 
 
 
@@ -81,8 +104,6 @@ Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
 });
 
 
-
-
 //jabatan
 Route::prefix('jabatan')->name('jabatan.')->group(function () {
     Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
@@ -103,7 +124,6 @@ Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function
     Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
 });
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard.index');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

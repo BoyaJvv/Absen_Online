@@ -17,21 +17,21 @@ class AbsensiPenggunaController extends Controller
     {
         // Validasi pengguna
         $pengguna = Pengguna::where('nomor_induk', $nomor_induk)->firstOrFail();
-        
+
         // Default date range (bulan ini)
         $firstDay = $request->get('awal', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $lastDay = $request->get('akhir', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        
+
         // Ambil data absensi (eager load jadwal, pivot jadwal, pengguna, mesin, dan cabang)
         $query = Absensi::with(['mesin', 'pengguna.cabangGedung', 'jadwalHarians', 'jadwalHarian'])
             ->where('nomor_induk', $nomor_induk)
             ->whereBetween('absen_at', [$firstDay . ' 00:00:00', $lastDay . ' 23:59:59']);
-        
+
         // Filter kategori
         if ($request->filled('kategori') && $request->kategori != '0') {
             $query->where('kategori', $request->kategori);
         }
-        
+
         $absensis = $query->get();
 
         // Per-record display fields: formatted absen_at, batas (target), selisih menit, status, warna, kategori
@@ -85,10 +85,18 @@ class AbsensiPenggunaController extends Controller
 
             // Tentukan kategori label
             switch ((string)$absensi->kategori) {
-                case '1': $absensi->kategori_label = 'Masuk'; break;
-                case '2': $absensi->kategori_label = 'Mulai Istirahat'; break;
-                case '3': $absensi->kategori_label = 'Selesai Istirahat'; break;
-                case '4': $absensi->kategori_label = 'Pulang'; break;
+                case '1':
+                    $absensi->kategori_label = 'Masuk';
+                    break;
+                case '2':
+                    $absensi->kategori_label = 'Mulai Istirahat';
+                    break;
+                case '3':
+                    $absensi->kategori_label = 'Selesai Istirahat';
+                    break;
+                case '4':
+                    $absensi->kategori_label = 'Pulang';
+                    break;
             }
 
             if (!$jadwal) {
@@ -148,37 +156,37 @@ class AbsensiPenggunaController extends Controller
             $absensi->display_batas = $displayTarget ? $displayTarget->format('Y-m-d H:i:s') : null;
             $absensi->selisih_menit = isset($target) ? round(abs($waktuAbsen->diffInSeconds($target)) / 60) : null;
         }
-        
+
         // Ambil data cabang
         $cabang = CabangGedung::find($pengguna->cabang_gedung);
-        
+
         // Ambil hari libur
         $hariLibur = $this->getHariLibur($cabang);
-        
+
         // Ambil data cuti
         $cuti = Cuti::where('nomor_induk', $nomor_induk)
             ->whereBetween('tanggal', [$firstDay, $lastDay])
             ->pluck('tanggal')
             ->toArray();
-        
+
         // Ambil libur khusus
         $liburKhusus = LiburKhusus::whereBetween('tanggal', [$firstDay, $lastDay])
             ->pluck('tanggal')
             ->toArray();
-        
+
         // Hitung statistik menggunakan `absen_at` dan aturan ±15 menit
         $statistics = $this->calculateStatistics($absensis, $pengguna);
-        
+
         // Hitung tanggal tanpa absen
         $tanpaAbsen = $this->calculateTanpaAbsen(
-            $firstDay, 
-            $lastDay, 
-            $absensis, 
-            $hariLibur, 
-            $cuti, 
+            $firstDay,
+            $lastDay,
+            $absensis,
+            $hariLibur,
+            $cuti,
             $liburKhusus
         );
-        
+
         return view('absensi.pengguna', compact(
             'pengguna',
             'absensis',
@@ -191,16 +199,16 @@ class AbsensiPenggunaController extends Controller
             'liburKhusus'
         ));
     }
-    
+
     private function getHariLibur($cabang)
     {
         if (!$cabang || empty($cabang->hari_libur)) {
             return [];
         }
-        
+
         return explode(',', $cabang->hari_libur);
     }
-    
+
     private function calculateStatistics($absensis, $pengguna = null)
     {
         $statistics = [
@@ -225,9 +233,9 @@ class AbsensiPenggunaController extends Controller
             if (!$jadwal && $pengguna) {
                 $day = $waktuAbsen->dayOfWeek; // 0 (Sun) .. 6 (Sat)
                 $jadwal = JadwalHarian::where('cabang_gedung_id', $pengguna->cabang_gedung)
-                    ->where(function($q) use ($day, $waktuAbsen) {
+                    ->where(function ($q) use ($day, $waktuAbsen) {
                         $q->where('hari', $day)
-                          ->orWhere('hari', $waktuAbsen->format('N'));
+                            ->orWhere('hari', $waktuAbsen->format('N'));
                     })->first();
             }
 
@@ -238,28 +246,32 @@ class AbsensiPenggunaController extends Controller
                     if ($jadwal->jam_masuk) {
                         $target = Carbon::parse($tgl . ' ' . $jadwal->jam_masuk);
                         $isTepat = $waktuAbsen->between($target->copy()->subMinutes(15), $target->copy()->addMinutes(15));
-                        if ($isTepat) $statistics['tepatMasuk']++; else $statistics['terlambatMasuk']++;
+                        if ($isTepat) $statistics['tepatMasuk']++;
+                        else $statistics['terlambatMasuk']++;
                     }
                     break;
                 case '2': // Mulai Istirahat
                     if (!empty($jadwal->istirahat1_mulai)) {
                         $target = Carbon::parse($tgl . ' ' . $jadwal->istirahat1_mulai);
                         $isTepat = $waktuAbsen->lessThanOrEqualTo($target->copy()->addMinutes(15));
-                        if ($isTepat) $statistics['tepatIstirahatMulai']++; else $statistics['cepatIstirahatMulai']++;
+                        if ($isTepat) $statistics['tepatIstirahatMulai']++;
+                        else $statistics['cepatIstirahatMulai']++;
                     }
                     break;
                 case '3': // Selesai Istirahat
                     if (!empty($jadwal->istirahat2_mulai)) {
                         $target = Carbon::parse($tgl . ' ' . $jadwal->istirahat2_mulai);
                         $isTepat = $waktuAbsen->lessThanOrEqualTo($target->copy()->addMinutes(15));
-                        if ($isTepat) $statistics['tepatIstirahatSelesai']++; else $statistics['cepatIstirahatSelesai']++;
+                        if ($isTepat) $statistics['tepatIstirahatSelesai']++;
+                        else $statistics['cepatIstirahatSelesai']++;
                     }
                     break;
                 case '4': // Pulang
                     if ($jadwal->jam_pulang) {
                         $target = Carbon::parse($tgl . ' ' . $jadwal->jam_pulang);
                         $isTepat = $waktuAbsen->greaterThanOrEqualTo($target);
-                        if ($isTepat) $statistics['tepatPulang']++; else $statistics['cepatPulang']++;
+                        if ($isTepat) $statistics['tepatPulang']++;
+                        else $statistics['cepatPulang']++;
                     }
                     break;
             }
@@ -267,29 +279,29 @@ class AbsensiPenggunaController extends Controller
 
         return $statistics;
     }
-    
+
     // Fungsi untuk menghitung selisih seperti sistem lama
     private function dateDifference($date1, $date2)
     {
         $datetime1 = strtotime($date1);
         $datetime2 = strtotime($date2);
-        
+
         $interval = abs($datetime1 - $datetime2);
         $minutes = round($interval / 60);
-        
+
         return $minutes;
     }
-    
+
     private function calculateTanpaAbsen($firstDay, $lastDay, $absensis, $hariLibur, $cuti, $liburKhusus)
     {
         $start = Carbon::parse($firstDay);
         $end = Carbon::parse($lastDay);
-        
+
         $tanpaAbsenMasuk = [];
         $tanpaAbsenMulai = [];
         $tanpaAbsenSelesai = [];
         $tanpaAbsenPulang = [];
-        
+
         // Ambil tanggal yang sudah absen berdasarkan kategori
         $absensiByKategori = [
             '1' => [],
@@ -297,27 +309,27 @@ class AbsensiPenggunaController extends Controller
             '3' => [],
             '4' => [],
         ];
-        
+
         foreach ($absensis as $absensi) {
             $tanggal = $absensi->absen_at ? Carbon::parse($absensi->absen_at)->format('Y-m-d') : null;
             if ($tanggal) $absensiByKategori[$absensi->kategori][] = $tanggal;
         }
-        
+
         // Konversi hari libur string ke integer
         $hariLiburInt = array_map('intval', $hariLibur);
-        
+
         // Generate tanggal range
         while ($start <= $end) {
             $currentDate = $start->format('Y-m-d');
             $dayOfWeek = $start->dayOfWeek; // 0 (Minggu) sampai 6 (Sabtu)
-            
+
             // Cek apakah hari kerja (bukan hari libur)
             if (!in_array($dayOfWeek, $hariLiburInt)) {
                 // Cek apakah ada di cuti
                 $isCuti = in_array($currentDate, $cuti);
                 // Cek apakah ada di libur khusus
                 $isLiburKhusus = in_array($currentDate, $liburKhusus);
-                
+
                 if (!$isCuti && !$isLiburKhusus) {
                     // Masuk
                     if (!in_array($currentDate, $absensiByKategori['1'])) {
@@ -327,7 +339,7 @@ class AbsensiPenggunaController extends Controller
                             'warna' => 'text-red-600'
                         ];
                     }
-                    
+
                     // Mulai Istirahat
                     if (!in_array($currentDate, $absensiByKategori['2'])) {
                         $tanpaAbsenMulai[] = [
@@ -336,7 +348,7 @@ class AbsensiPenggunaController extends Controller
                             'warna' => 'text-red-600'
                         ];
                     }
-                    
+
                     // Selesai Istirahat
                     if (!in_array($currentDate, $absensiByKategori['3'])) {
                         $tanpaAbsenSelesai[] = [
@@ -345,7 +357,7 @@ class AbsensiPenggunaController extends Controller
                             'warna' => 'text-red-600'
                         ];
                     }
-                    
+
                     // Pulang
                     if (!in_array($currentDate, $absensiByKategori['4'])) {
                         $tanpaAbsenPulang[] = [
@@ -358,7 +370,7 @@ class AbsensiPenggunaController extends Controller
                     // Tanggal cuti atau libur khusus
                     $keterangan = $isCuti ? 'Cuti' : 'Libur';
                     $warna = 'text-green-600';
-                    
+
                     $tanpaAbsenMasuk[] = ['tanggal' => $currentDate, 'keterangan' => $keterangan, 'warna' => $warna];
                     $tanpaAbsenMulai[] = ['tanggal' => $currentDate, 'keterangan' => $keterangan, 'warna' => $warna];
                     $tanpaAbsenSelesai[] = ['tanggal' => $currentDate, 'keterangan' => $keterangan, 'warna' => $warna];
@@ -371,15 +383,22 @@ class AbsensiPenggunaController extends Controller
                 $tanpaAbsenSelesai[] = ['tanggal' => $currentDate, 'keterangan' => 'Libur', 'warna' => 'text-green-600'];
                 $tanpaAbsenPulang[] = ['tanggal' => $currentDate, 'keterangan' => 'Libur', 'warna' => 'text-green-600'];
             }
-            
+
             $start->addDay();
         }
-        
+
         return [
             'masuk' => $tanpaAbsenMasuk,
             'mulai' => $tanpaAbsenMulai,
             'selesai' => $tanpaAbsenSelesai,
             'pulang' => $tanpaAbsenPulang
         ];
+    }
+
+    public function rekapSaya(Request $request)
+    {
+        $user = $request->user();
+
+        return $this->show($user->nomor_induk, $request);
     }
 }
