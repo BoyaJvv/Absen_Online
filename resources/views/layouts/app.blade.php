@@ -68,8 +68,11 @@
 
             @php
                 $user = auth()->user();
-                $role = (int) ($user->jabatan_status ?? -1);
-                $isAdmin = in_array($role, [0, 1]);
+                $jabatanStatus = $user->jabatanStatus;
+                $hakAkses = $jabatanStatus?->hakAkses;
+                $userRole = $hakAkses?->hak;
+                $isAdmin = in_array($userRole, ['nusabot', 'full']);
+                $isGeneral = $userRole === 'general';
             @endphp
 
             <nav class="flex-1 px-3 py-4 space-y-1 text-sm text-white">
@@ -82,7 +85,7 @@
                     <span class="sidebar-text">Dashboard</span>
                 </a>
 
-                {{-- ================= ADMIN ================= --}}
+                {{-- ================= ADMIN (nusabot, full) ================= --}}
                 @if ($isAdmin)
                     <a href="{{ url('pengguna') }}"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
@@ -140,8 +143,8 @@
                         </div>
                     </details>
 
-                    {{-- ================= USER ================= --}}
-                @else
+                {{-- ================= GENERAL USER ================= --}}
+                @elseif ($isGeneral)
                     <a href="{{ url('/absensi/pengguna') }}"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <i class="bi bi-clipboard-data text-lg w-5 text-center"></i>

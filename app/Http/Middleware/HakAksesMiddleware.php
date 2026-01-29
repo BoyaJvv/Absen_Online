@@ -8,22 +8,70 @@ use Symfony\Component\HttpFoundation\Response;
 
 class HakAksesMiddleware
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
 
         // belum login
         if (!$user) {
-            abort(403);
+            return response()->view('errors.access_denied', [
+                'message' => 'Anda harus login terlebih dahulu',
+                'action' => 'login'
+            ], 403);
         }
 
-        $hakAkses = optional($user->jabatanStatus)->hak_akses;
+        // Dapatkan hak akses dari jabatan status user
+        $jabatanStatus = $user->jabatanStatus;
+        
+        if (!$jabatanStatus) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return response()->view('errors.access_denied', [
+                'message' => 'User tidak memiliki jabatan status yang terkait',
+                'action' => 'logout',
+                'debug' => [
+                    'user_id' => $user->nomor_induk,
+                    'jabatan_status_id' => $user->jabatan_status,
+                ]
+            ], 403);
+        }
+        
+        $hakAkses = $jabatanStatus->hakAkses;
+        
+        if (!$hakAkses) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return response()->view('errors.access_denied', [
+                'message' => 'Jabatan status tidak memiliki hak akses yang terkait',
+                'action' => 'logout',
+                'debug' => [
+                    'jabatan_status_id' => $jabatanStatus->id,
+                    'hak_akses_id' => $jabatanStatus->hak_akses,
+                ]
+            ], 403);
+        }
 
-        // selain 0 dan 1 → user biasa
-        if (!in_array((int) $hakAkses, [0, 1])) {
-            // boleh lanjut, tapi akses terbatas
-            // route yang kena middleware ini hanya utk admin
-            abort(403, 'Akses ditolak');
+        // Dapatkan nama hak akses dari relasi (kolom 'hak')
+        $userHakAkses = $hakAkses->hak;
+
+        // Periksa apakah user punya salah satu role yang diizinkan
+        if (!in_array($userHakAkses, $roles)) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return response()->view('errors.access_denied', [
+                'message' => "Akses ditolak. Anda memiliki role '{$userHakAkses}' tetapi membutuhkan: " . implode(', ', $roles),
+                'action' => 'logout',
+                'debug' => [
+                    'user_role' => $userHakAkses,
+                    'required_roles' => $roles,
+                ]
+            ], 403);
         }
 
         return $next($request);

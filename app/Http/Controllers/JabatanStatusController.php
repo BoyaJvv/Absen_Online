@@ -17,7 +17,9 @@ class JabatanStatusController extends Controller
             })
             ->get();
 
-        return view('jabatan.index', compact('data', 'search'));
+        $hakAksesList = \App\Models\HakAkses::all();
+
+        return view('jabatan.index', compact('data', 'search', 'hakAksesList'));
     }
 
     public function store(Request $request)
@@ -51,7 +53,8 @@ class JabatanStatusController extends Controller
     public function edit($id)
     {
         $jabatan = JabatanStatus::findOrFail($id);
-        return view('jabatan.edit', compact('jabatan'));
+        $hakAksesList = \App\Models\HakAkses::all();
+        return view('jabatan.edit', compact('jabatan', 'hakAksesList'));
     }
 
     public function update(Request $request, $id)

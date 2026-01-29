@@ -48,12 +48,11 @@
                             class="w-full rounded border px-3 py-2
                                    focus:ring focus:ring-blue-200
                                    focus:border-blue-400">
-                            <option value="1" {{ $jabatan->hak_akses == 1 ? 'selected' : '' }}>
-                                Full
-                            </option>
-                            <option value="2" {{ $jabatan->hak_akses == 2 ? 'selected' : '' }}>
-                                General
-                            </option>
+                            @foreach ($hakAksesList as $hak)
+                                <option value="{{ $hak->id }}" {{ $jabatan->hak_akses == $hak->id ? 'selected' : '' }}>
+                                    {{ $hak->hak }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 

@@ -28,6 +28,9 @@ class User extends Authenticatable
         'nama',
         'nomor_induk',
         'password',
+        'jabatan_status',
+        'cabang_gedung',
+        'aktif',
     ];
 
     // Beritahu Laravel untuk menggunakan nomor_induk sebagai pengganti email
@@ -37,7 +40,7 @@ class User extends Authenticatable
     }
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Get the attributes that should be hidden for serialization.
      *
      * @var list<string>
      */
@@ -45,6 +48,32 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
+
+    // 🔹 Jabatan Status
+    public function jabatanStatus()
+    {
+        return $this->belongsTo(
+            JabatanStatus::class,
+            'jabatan_status',
+            'id'
+        );
+    }
+
+    // 🔹 Cabang Gedung
+    public function cabangGedung()
+    {
+        return $this->belongsTo(
+            CabangGedung::class,
+            'cabang_gedung',
+            'id'
+        );
+    }
 
     /**
      * Get the attributes that should be cast.

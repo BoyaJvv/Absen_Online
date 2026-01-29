@@ -16,22 +16,22 @@ use App\Http\Controllers\DendaController;
 
 // ================= ADMIN =================
 Route::get('/absensi', [AbsensiController::class, 'index'])
-    ->middleware(['auth', 'role:admin'])
+    ->middleware('hakAkses:nusabot,full')
     ->name('absensi.index');
 
 // ADMIN lihat rekap orang tertentu
 Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'rekap'])
-    ->middleware(['auth', 'role:admin'])
+    ->middleware('hakAkses:nusabot,full')
     ->name('absensi.pengguna.detail');
 
 // ================= USER =================
 // USER lihat rekap DIRI SENDIRI
 Route::get('/absensi/pengguna', [AbsensiPenggunaController::class, 'rekapSaya'])
-    ->middleware('auth')
+    ->middleware('auth', 'verified')
     ->name('absensi.pengguna.saya');
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware('hakAkses:nusabot,full,general')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard.index');
 
@@ -41,59 +41,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 
-
-Route::prefix('pengaturan')->middleware(['auth'])->group(function () {
+Route::prefix('pengaturan')->middleware('hakAkses:nusabot,full')->group(function () {
     Route::get('denda', [DendaController::class, 'index'])->name('denda.index');
     Route::get('denda/{id}/edit', [DendaController::class, 'edit'])->name('denda.edit');
     Route::put('denda/{id}', [DendaController::class, 'update'])->name('denda.update');
 });
 
 
-Route::resource('mesin', MesinController::class);
-Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
-Route::post('/mesin', [MesinController::class, 'store'])->name('mesin.store');
-Route::get('/mesin/{id}/edit', [MesinController::class, 'edit'])->name('mesin.edit');
-Route::put('/mesin/{id}', [MesinController::class, 'update'])->name('mesin.update');
+Route::middleware('hakAkses:nusabot,full')->group(function () {
+    Route::resource('mesin', MesinController::class);
+    Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
+    Route::post('/mesin', [MesinController::class, 'store'])->name('mesin.store');
+    Route::get('/mesin/{id}/edit', [MesinController::class, 'edit'])->name('mesin.edit');
+    Route::put('/mesin/{id}', [MesinController::class, 'update'])->name('mesin.update');
+});
 
 
-Route::get('/absensi', [AbsensiController::class, 'index'])
-    ->name('absensi.index');
-Route::get('/absensi/{id}', [AbsensiController::class, 'show'])
-    ->name('absensi.show');
-Route::post('/absensi', [AbsensiController::class, 'store'])
-    ->name('absensi.store');
-Route::get('/absensi-mesin', [AbsensiController::class, 'byMesin'])
-    ->name('absensi.mesin');
-Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
-Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'show'])
-    ->name('absensi.pengguna');
+Route::middleware('hakAkses:nusabot,full')->group(function () {
+    Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('/absensi/{id}', [AbsensiController::class, 'show'])->name('absensi.show');
+    Route::post('/absensi', [AbsensiController::class, 'store'])->name('absensi.store');
+    Route::get('/absensi-mesin', [AbsensiController::class, 'byMesin'])->name('absensi.mesin');
+    Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'show'])->name('absensi.pengguna');
+});
+
 
 // Cabang dan Gedung Routes
-Route::get('/cabang-gedung', [CabangGedungController::class, 'index'])
-    ->name('cabang-gedung.index');
-Route::post('/cabang-gedung', [CabangGedungController::class, 'store'])
-    ->name('cabang-gedung.store');
-Route::delete('/cabang-gedung/{id}', [CabangGedungController::class, 'destroy'])
-    ->name('cabang-gedung.destroy');
-Route::get('/cabang-gedung/{id}/edit', [CabangGedungController::class, 'edit'])
-    ->name('cabang-gedung.edit');
-Route::put('/cabang-gedung/{id}', [CabangGedungController::class, 'update'])
-    ->name('cabang-gedung.update');
+Route::middleware('hakAkses:nusabot,full')->group(function () {
+    Route::get('/cabang-gedung', [CabangGedungController::class, 'index'])->name('cabang-gedung.index');
+    Route::post('/cabang-gedung', [CabangGedungController::class, 'store'])->name('cabang-gedung.store');
+    Route::delete('/cabang-gedung/{id}', [CabangGedungController::class, 'destroy'])->name('cabang-gedung.destroy');
+    Route::get('/cabang-gedung/{id}/edit', [CabangGedungController::class, 'edit'])->name('cabang-gedung.edit');
+    Route::put('/cabang-gedung/{id}', [CabangGedungController::class, 'update'])->name('cabang-gedung.update');
+});
+
 
 // cuti
-Route::get('/cuti', [CutiController::class, 'index'])
-    ->name('cuti.index');
-Route::post('/cuti', [CutiController::class, 'store'])
-    ->name('cuti.store');
-Route::delete('/cuti/{id}', [CutiController::class, 'destroy'])
-    ->name('cuti.destroy');
-Route::get('/cuti/{id}/edit', [CutiController::class, 'edit'])
-    ->name('cuti.edit');
-Route::put('/cuti/{id}', [CutiController::class, 'update'])
-    ->name('cuti.update');
+Route::middleware('hakAkses:nusabot,full')->group(function () {
+    Route::get('/cuti', [CutiController::class, 'index'])->name('cuti.index');
+    Route::post('/cuti', [CutiController::class, 'store'])->name('cuti.store');
+    Route::delete('/cuti/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
+    Route::get('/cuti/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
+    Route::put('/cuti/{id}', [CutiController::class, 'update'])->name('cuti.update');
+});
+
 
 // libur khusus
-Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
+Route::prefix('libur_khusus')->name('libur_khusus.')->middleware('hakAkses:nusabot,full')->group(function () {
     Route::get('/', [LiburKhususController::class, 'index'])->name('index');
     Route::post('/', [LiburKhususController::class, 'store'])->name('store');
 
@@ -105,7 +99,7 @@ Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
 
 
 //jabatan
-Route::prefix('jabatan')->name('jabatan.')->group(function () {
+Route::prefix('jabatan')->name('jabatan.')->middleware('hakAkses:nusabot,full')->group(function () {
     Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
     Route::post('/', [JabatanStatusController::class, 'store'])->name('store');
 
@@ -115,7 +109,8 @@ Route::prefix('jabatan')->name('jabatan.')->group(function () {
     Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
 });
 
-Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function () {
+
+Route::middleware('hakAkses:nusabot,full')->prefix('pengguna')->name('pengguna.')->group(function () {
     Route::get('/', [PenggunaController::class, 'index'])->name('index');
     Route::get('/create', [PenggunaController::class, 'create'])->name('create');
     Route::post('/', [PenggunaController::class, 'store'])->name('store');
@@ -123,6 +118,38 @@ Route::middleware('auth')->prefix('pengguna')->name('pengguna.')->group(function
     Route::put('/{id}', [PenggunaController::class, 'update'])->name('update');
     Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
 });
+
+// DEBUG ROUTE - HAPUS SETELAH SELESAI
+Route::get('/debug-akses', function () {
+    $user = auth()->user();
+    
+    if (!$user) {
+        return response()->json(['error' => 'User tidak login'], 401);
+    }
+    
+    $jabatanStatus = $user->jabatanStatus;
+    $hakAkses = $jabatanStatus?->hakAkses;
+    
+    return response()->json([
+        'user' => [
+            'nomor_induk' => $user->nomor_induk,
+            'nama' => $user->nama,
+            'jabatan_status_id' => $user->jabatan_status,
+        ],
+        'jabatan_status' => [
+            'id' => $jabatanStatus?->id,
+            'jabatan_status' => $jabatanStatus?->jabatan_status,
+            'hak_akses_id' => $jabatanStatus?->hak_akses,
+            'aktif' => $jabatanStatus?->aktif,
+        ],
+        'hak_akses' => [
+            'id' => $hakAkses?->id,
+            'hak' => $hakAkses?->hak,
+        ],
+        'all_hak_akses_table' => \Illuminate\Support\Facades\DB::table('hak_akses')->get(),
+        'all_jabatan_status_table' => \Illuminate\Support\Facades\DB::table('jabatan_status')->get(['id', 'jabatan_status', 'hak_akses', 'aktif']),
+    ], 200, [], JSON_PRETTY_PRINT);
+})->middleware('auth');
 
 
 Route::middleware('auth')->group(function () {

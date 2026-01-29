@@ -69,7 +69,7 @@
                     <tr class="hover:bg-slate-50 transition text-center">
                         <td class="px-4 py-3">{{ $row->jabatan_status }}</td>
                         <td class="px-4 py-3">
-                            {{ $row->hak_akses == 1 ? 'Full' : 'General' }}
+                            {{ $row->hakAkses->hak ?? 'N/A' }}
                         </td>
                         <td class="px-4 py-3">
                             {{ $row->aktif ? 'Aktif' : 'Non-aktif' }}
@@ -111,8 +111,9 @@
                 <label class="block mb-2 font-medium">Hak Akses</label>
                 <select name="hak_akses"
                     class="w-full rounded-xl border px-4 py-3">
-                    <option value="1">Full</option>
-                    <option value="2">General</option>
+                    @foreach ($hakAksesList as $hak)
+                        <option value="{{ $hak->id }}">{{ $hak->hak }}</option>
+                    @endforeach
                 </select>
             </div>
 
