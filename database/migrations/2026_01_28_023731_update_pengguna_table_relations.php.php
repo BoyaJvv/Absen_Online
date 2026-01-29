@@ -12,13 +12,24 @@ return new class extends Migration
     // 1. Matikan pengecekan foreign key
     Schema::disableForeignKeyConstraints();
 
+   Schema::dropIfExists('absensi_jadwal_harian');
+    Schema::dropIfExists('jadwal_harian');
+
+    // 3. HAPUS KOLOM jadwal_harian_id DI TABEL absensi
+    // Kita langsung hapus kolomnya saja, MySQL akan otomatis melepas constraint jika ada
+    if (Schema::hasColumn('absensi', 'jadwal_harian_id')) {
+        Schema::table('absensi', function (Blueprint $table) {
+            $table->dropColumn('jadwal_harian_id');
+        });
+    }
+
     // 2. HAPUS semua foreign key yang mungkin sudah ada agar tidak duplikat
     $tablesToClean = [
         'pengguna' => ['cabang_gedung', 'jabatan_status'],
         'absensi' => ['nomor_induk'],
         'mesin' => ['id_cabang_gedung'],
         'jabatan_status' => ['hak_akses'],
-        'jadwal_harian' => ['cabang_gedung_id'],
+   
         'cuti' => ['nomor_induk'],
     ];
 
@@ -43,7 +54,7 @@ return new class extends Migration
     DB::statement("ALTER TABLE pengguna MODIFY jabatan_status INT UNSIGNED NOT NULL");
     DB::statement("ALTER TABLE mesin MODIFY id_cabang_gedung INT UNSIGNED NOT NULL");
     DB::statement("ALTER TABLE jabatan_status MODIFY hak_akses INT UNSIGNED NOT NULL");
-    DB::statement("ALTER TABLE jadwal_harian MODIFY cabang_gedung_id INT UNSIGNED NOT NULL");
+
 
     DB::statement("ALTER TABLE cuti CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
@@ -51,7 +62,7 @@ return new class extends Migration
 // Menghapus data cuti yang nomor_induknya tidak ada di tabel pengguna
 DB::statement("DELETE FROM cuti WHERE nomor_induk NOT IN (SELECT nomor_induk FROM pengguna)");
     // 4. SAMAKAN COLLATION
-    $tables = ['pengguna', 'cabang_gedung', 'jabatan_status', 'hak_akses', 'jadwal_harian', 'absensi', 'mesin', 'cuti'];
+    $tables = ['pengguna', 'cabang_gedung', 'jabatan_status', 'hak_akses',  'absensi', 'mesin', 'cuti'];
     foreach ($tables as $table) {
         DB::statement("ALTER TABLE $table CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     }
@@ -74,9 +85,7 @@ DB::statement("DELETE FROM cuti WHERE nomor_induk NOT IN (SELECT nomor_induk FRO
         $table->foreign('hak_akses')->references('id')->on('hak_akses')->onDelete('cascade');
     });
 
-    Schema::table('jadwal_harian', function (Blueprint $table) {
-        $table->foreign('cabang_gedung_id')->references('id')->on('cabang_gedung')->onDelete('cascade');
-    });
+
    Schema::table('cuti', function (Blueprint $table) {
     try {
         $table->foreign('nomor_induk')
