@@ -76,6 +76,72 @@
         </form>
     </div>
 
+     {{-- TABLE ABSENSI dengan pagination --}}
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible mb-12 p-6">
+        <div class="overflow-x-auto">
+            <table id="absensiTable" class="w-full text-sm border-collapse">
+                <thead class="bg-gray-800 text-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 border border-gray-700">Absen</th>
+                        <th class="px-6 py-4 border border-gray-700">Batas</th>
+                        <th class="px-6 py-4 border border-gray-700">Selisih</th>
+                        <th class="px-6 py-4 border border-gray-700">Status</th>
+                        <th class="px-6 py-4 border border-gray-700">Cabang</th>
+                        <th class="px-6 py-4 border border-gray-700">Kategori</th>
+                        <th class="px-6 py-4 border border-gray-700">ID Mesin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- @php
+                        $perPage = 10;
+                        $currentPage = request()->get('page', 1);
+                        $total = count($absensis);
+                        $absensisPaginated = collect($absensis)->forPage($currentPage, $perPage);
+                    @endphp
+                     --}}
+                    @forelse($absensis as $absensi)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 border {{ $absensi->warna }}">
+                                    {{ $absensi->display_absen ?? ($absensi->absen_at ?? '-') }}
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $absensi->display_batas ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 border {{ $absensi->warna }}">
+                                    {{ $absensi->selisih_menit !== null ? $absensi->selisih_menit . ' Menit' : '-' }}
+                                </td>
+                                <td class="px-6 py-4 border text-center">
+                                    @if(is_null($absensi->status))
+                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
+                                    @elseif(($absensi->status ?? '') === 'tepat')
+                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">{{ $absensi->status_label ?? 'Tepat Waktu' }}</span>
+                                    @else
+                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">{{ $absensi->status_label ?? 'Terlambat' }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $cabang->lokasi ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $absensi->kategori_label ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 border">
+                                    {{ $absensi->idmesin }}
+                                </td>
+                            </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-gray-500">
+                                Tidak ada data absensi
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+            </div>
+            </div>
+          
+
     {{-- STATISTICS BOXES - TERLAMBAT/CEPAT --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {{-- Masuk Terlambat --}}
@@ -208,105 +274,7 @@
                 {{ $statistics['tepatPulang'] }} <span class="text-lg">Menit</span>
             </p>
         </div>
-    </div>
-
-    {{-- TABLE ABSENSI dengan pagination --}}
-    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm border-collapse">
-                <thead class="bg-gray-800 text-gray-100">
-                    <tr>
-                        <th class="px-6 py-4 border border-gray-700">Absen</th>
-                        <th class="px-6 py-4 border border-gray-700">Batas</th>
-                        <th class="px-6 py-4 border border-gray-700">Selisih</th>
-                        <th class="px-6 py-4 border border-gray-700">Status</th>
-                        <th class="px-6 py-4 border border-gray-700">Cabang</th>
-                        <th class="px-6 py-4 border border-gray-700">Kategori</th>
-                        <th class="px-6 py-4 border border-gray-700">ID Mesin</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $perPage = 10;
-                        $currentPage = request()->get('page', 1);
-                        $total = count($absensis);
-                        $absensisPaginated = collect($absensis)->forPage($currentPage, $perPage);
-                    @endphp
-                    
-                    @forelse($absensisPaginated as $absensi)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 border {{ $absensi->warna }}">
-                                    {{ $absensi->display_absen ?? ($absensi->absen_at ?? '-') }}
-                                </td>
-                                <td class="px-6 py-4 border">
-                                    {{ $absensi->display_batas ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 border {{ $absensi->warna }}">
-                                    {{ $absensi->selisih_menit !== null ? $absensi->selisih_menit . ' Menit' : '-' }}
-                                </td>
-                                <td class="px-6 py-4 border text-center">
-                                    @if(is_null($absensi->status))
-                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
-                                    @elseif(($absensi->status ?? '') === 'tepat')
-                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">{{ $absensi->status_label ?? 'Tepat Waktu' }}</span>
-                                    @else
-                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">{{ $absensi->status_label ?? 'Terlambat' }}</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 border">
-                                    {{ $cabang->lokasi ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 border">
-                                    {{ $absensi->kategori_label ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 border">
-                                    {{ $absensi->idmesin }}
-                                </td>
-                            </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center py-8 text-gray-500">
-                                Tidak ada data absensi
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-            
-            {{-- Pagination --}}
-            @if($total > $perPage)
-                <div class="px-6 py-4 border-t border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <div class="text-sm text-gray-700">
-                            Menampilkan {{ (($currentPage - 1) * $perPage) + 1 }} sampai {{ min($currentPage * $perPage, $total) }} dari {{ $total }} data
-                        </div>
-                        <div class="flex space-x-2">
-                            @if($currentPage > 1)
-                                <a href="?page={{ $currentPage - 1 }}&{{ http_build_query(request()->except('page')) }}"
-                                   class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                                    Sebelumnya
-                                </a>
-                            @endif
-                            
-                            @for($i = 1; $i <= ceil($total / $perPage); $i++)
-                                <a href="?page={{ $i }}&{{ http_build_query(request()->except('page')) }}"
-                                   class="px-3 py-1 rounded-lg {{ $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300' }}">
-                                    {{ $i }}
-                                </a>
-                            @endfor
-                            
-                            @if($currentPage < ceil($total / $perPage))
-                                <a href="?page={{ $currentPage + 1 }}&{{ http_build_query(request()->except('page')) }}"
-                                   class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                                    Selanjutnya
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
+    </div>   
 
     {{-- TANPA ABSEN TABLES tanpa scroll --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -454,20 +422,69 @@
 
 @push('styles')
 <style>
-    /* Tambahkan sedikit ruang di bagian bawah card tanpa absen */
-    .bg-white.rounded-xl {
-        display: flex;
-        flex-direction: column;
-        min-height: 300px; /* Atur tinggi minimum */
-    }
-    
-    .bg-white.rounded-xl .p-4 {
-        flex: 1;
-    }
-    
-    .bg-white.rounded-xl table {
-        height: 100%;
-    }
+.dataTables_wrapper {
+    padding: 1rem;
+}
+
+.dataTables_filter,
+.dt-buttons {
+    margin-bottom: 1rem;
+}
+
+.dataTables_info,
+.dataTables_paginate {
+    margin-top: 1rem;
+}
+
+table.dataTable {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
 </style>
 @endpush
+
+
+@push('scripts')
+<script>
+$(document).ready(function () {
+    $('#absensiTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        order: [[0, 'desc']],
+
+        lengthChange: false,
+
+        dom:
+            "<'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4'Bf>" +
+            "<'overflow-x-auto't>" +
+            "<'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4'ip>",
+
+        buttons: [
+            'copy',
+            'csv',
+            'excel',
+            'pdf',
+            'print',
+            {
+                extend: 'colvis',
+                text: 'Column visibility'
+            }
+        ],
+
+        language: {
+            search: "Cari:",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            paginate: {
+                previous: "‹",
+                next: "›"
+            },
+            zeroRecords: "Data tidak ditemukan"
+        }
+    });
+});
+
+
+</script>
+@endpush
+
 @endsection
