@@ -6,28 +6,29 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
+@push('styles')
 <style>
-/* DataTables Tailwind Friendly */
-.dataTables_wrapper .dataTables_filter input {
-    border: 1px solid #d1d5db;
-    border-radius: .5rem;
-    padding: .45rem .75rem;
-    margin-left: .5rem;
+.dataTables_wrapper {
+    padding: 1rem;
 }
-.dataTables_wrapper .dataTables_length select {
-    border-radius: .5rem;
-    padding: .3rem .6rem;
+
+.dataTables_filter,
+.dt-buttons {
+    margin-bottom: 1rem;
 }
-.dt-button {
-    border-radius: .5rem !important;
-    padding: .4rem .8rem !important;
-    border: 1px solid #e5e7eb !important;
-    background: #fff !important;
+
+.dataTables_info,
+.dataTables_paginate {
+    margin-top: 1rem;
 }
-.dt-button:hover {
-    background: #f1f5f9 !important;
+
+table.dataTable {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
 }
 </style>
+@endpush
+
 
 <div class="max-w-7xl mx-auto px-4 py-6 space-y-10">
 
@@ -57,8 +58,9 @@
     @endif
 
     {{-- ================= TABLE CARD ================= --}}
-    <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
-        <table id="cutiTable" class="min-w-full text-sm">
+    {{-- <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto"> --}}
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible mb-12 p-6">
+        <table id="cutiTable" class="w-full text-sm border-collapse">
             <thead class="bg-slate-800 text-white">
                 <tr>
                     <th class="py-3 px-4">ID</th>
@@ -178,23 +180,57 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
+@push('styles')
+<style>
+.dataTables_wrapper {
+    padding-bottom: 1.5rem;
+}
+
+.dataTables_filter,
+.dt-buttons {
+    margin-bottom: 1rem;
+}
+
+.dataTables_info,
+.dataTables_paginate {
+    margin-top: 1rem;
+}
+</style>
+@endpush
+
 <script>
-$(function () {
+$(document).ready(function () {
     $('#cutiTable').DataTable({
         responsive: true,
-        pageLength: 8,
-        dom: 'Bfrtip',
+        pageLength: 10,
+        order: [[0, 'desc']],
+        lengthChange: false,
+
+        dom:
+            "<'d-flex flex-column flex-md-row justify-content-between align-items-center mb-3'Bf>" +
+            "<'table-responsive't>" +
+            "<'d-flex flex-column flex-md-row justify-content-between align-items-center mt-3'ip>",
+
         buttons: [
-            'copy', 'excel', 'pdf', 'print', 'colvis'
+            'copy',
+            'csv',
+            'excel',
+            'pdf',
+            'print',
+            {
+                extend: 'colvis',
+                text: 'Column visibility'
+            }
         ],
+
         language: {
             search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data",
             info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
             paginate: {
                 previous: "‹",
                 next: "›"
-            }
+            },
+            zeroRecords: "Data tidak ditemukan"
         }
     });
 });

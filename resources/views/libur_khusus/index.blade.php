@@ -6,31 +6,29 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
+@push('styles')
 <style>
-    /* DataTables Tailwind Friendly */
-    .dataTables_wrapper .dataTables_filter input {
-        border: 1px solid #d1d5db;
-        border-radius: .5rem;
-        padding: .45rem .75rem;
-        margin-left: .5rem;
-    }
+.dataTables_wrapper {
+    padding: 1rem;
+}
 
-    .dataTables_wrapper .dataTables_length select {
-        border-radius: .5rem;
-        padding: .3rem .6rem;
-    }
+.dataTables_filter,
+.dt-buttons {
+    margin-bottom: 1rem;
+}
 
-    .dt-button {
-        border-radius: .5rem !important;
-        padding: .4rem .8rem !important;
-        border: 1px solid #e5e7eb !important;
-        background: #fff !important;
-    }
+.dataTables_info,
+.dataTables_paginate {
+    margin-top: 1rem;
+}
 
-    .dt-button:hover {
-        background: #f1f5f9 !important;
-    }
+table.dataTable {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
 </style>
+@endpush
+
 
 <div class="max-w-7xl mx-auto px-4 py-6 space-y-10">
 
