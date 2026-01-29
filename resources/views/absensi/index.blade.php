@@ -1,177 +1,190 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid px-5 py-6 text-[16px]">
 
-        {{-- HEADER --}}
-        <div class="mb-6 flex items-center gap-3">
-            <div class="bg-blue-600 text-white p-3 rounded-xl shadow">
-                <i class="bi bi-clipboard-data text-2xl"></i>
-            </div>
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">
-                    Laporan Absensi
-                </h1>
-                <p class="text-gray-600 text-base">
-                    Rekap data absensi berdasarkan filter
-                </p>
-            </div>
+{{-- ================= DATA TABLES CSS ================= --}}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+{{-- ================= DATATABLES FIX STYLE ================= --}}
+@push('styles')
+<style>
+.dataTables_wrapper {
+    padding: 1rem;
+}
+
+.dataTables_filter,
+.dt-buttons {
+    margin-bottom: 1rem;
+}
+
+.dataTables_info,
+.dataTables_paginate {
+    margin-top: 1rem;
+}
+
+table.dataTable {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
+</style>
+@endpush
+
+
+<div class="container-fluid px-3 sm:px-5 py-6 text-[15px] sm:text-[16px]">
+
+    {{-- HEADER --}}
+    <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div class="bg-blue-600 text-white p-3 rounded-xl shadow">
+            <i class="bi bi-clipboard-data text-2xl"></i>
         </div>
-
-        {{-- FILTER --}}
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
-            <form method="GET" action="{{ route('absensi.index') }}">
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-
-                    <div>
-                        <label class="block mb-2 font-semibold text-gray-700">
-                            Cabang Gedung
-                        </label>
-                        <select name="cabang_gedung"
-                            class="w-full h-12 rounded-xl border border-gray-300 text-base focus:ring-2 focus:ring-blue-500">
-                            <option value="">-- Pilih Cabang --</option>
-                            @foreach ($cabangGedungs as $cabang)
-                                <option value="{{ $cabang->id }}"
-                                    {{ request('cabang_gedung') == $cabang->id ? 'selected' : '' }}>
-                                    {{ $cabang->lokasi }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block mb-2 font-semibold text-gray-700">
-                            Tanggal Awal
-                        </label>
-                        <input type="date" name="awal" class="w-full h-12 rounded-xl border border-gray-300 text-base"
-                            value="{{ request('awal') }}" required>
-                    </div>
-
-                    <div>
-                        <label class="block mb-2 font-semibold text-gray-700">
-                            Tanggal Akhir
-                        </label>
-                        <input type="date" name="akhir" class="w-full h-12 rounded-xl border border-gray-300 text-base"
-                            value="{{ request('akhir') }}" required>
-                    </div>
-
-                    <div>
-                        <label class="block mb-2 font-semibold text-gray-700">
-                            Kategori
-                        </label>
-                        <select name="kategori" class="w-full h-12 rounded-xl border border-gray-300 text-base">
-                            <option value="">Semua Kategori</option>
-                            <option value="1" {{ request('kategori') == 1 ? 'selected' : '' }}>Masuk</option>
-                            <option value="2" {{ request('kategori') == 2 ? 'selected' : '' }}>Istirahat Mulai</option>
-                            <option value="3" {{ request('kategori') == 3 ? 'selected' : '' }}>Istirahat Selesai
-                            </option>
-                            <option value="4" {{ request('kategori') == 4 ? 'selected' : '' }}>Pulang</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="mt-6 flex justify-end">
-                    <button type="submit"
-                        class="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white text-lg px-6 py-3 rounded-xl shadow-lg transition">
-                        <i class="bi bi-filter-circle text-xl"></i>
-                        Tampilkan Data
-                    </button>
-                </div>
-
-            </form>
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
+                Laporan Absensi
+            </h1>
+            <p class="text-gray-600 text-sm sm:text-base">
+                Rekap data absensi (DataTables)
+            </p>
         </div>
+    </div>
 
-        {{-- TABLE --}}
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-base border-collapse">
-                    <thead class="bg-slate-800 text-slate-100">
-                        <tr>
-                            <th class="px-6 py-4 border border-slate-700">Waktu Absen</th>
-                            <th class="px-6 py-4 border border-slate-700">Nama</th>
-                            <th class="px-6 py-4 border border-slate-700">Nomor Induk</th>
-                            <th class="px-6 py-4 border border-slate-700">Cabang</th>
-                            <th class="px-6 py-4 border border-slate-700">Kategori</th>
-                            <th class="px-6 py-4 border border-slate-700">Status</th>
-                            <th class="px-6 py-4 border border-slate-700">ID Mesin</th>
+    {{-- TABLE --}}
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible mb-12 p-6">
+        <div class="overflow-x-auto">
+            <table id="absensiTable" class="w-full text-sm border-collapse">
+                   {{-- class="min-w-[900px] w-full text-sm sm:text-base border-collapse"> --}}
+
+                <thead class="bg-slate-800 text-slate-100">
+                    <tr>
+                        <th class="px-4 py-3 border">Waktu</th>
+                        <th class="px-4 py-3 border">Nama</th>
+                        <th class="px-4 py-3 border">NIP</th>
+                        <th class="px-4 py-3 border">Cabang</th>
+                        <th class="px-4 py-3 border">Kategori</th>
+                        <th class="px-4 py-3 border">Status</th>
+                        <th class="px-4 py-3 border">Mesin</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($absensis as $a)
+                        <tr class="hover:bg-blue-50 transition text-gray-800">
+                            <td class="px-4 py-3 border whitespace-nowrap">
+                                {{ $a->display_absen ?? ($a->absen_at ?? '-') }}
+                            </td>
+
+                            <td class="px-4 py-3 border font-semibold">
+                                <a href="{{ route('absensi.pengguna', $a->nomor_induk) }}"
+                                   class="text-blue-600 hover:underline">
+                                    {{ $a->pengguna->nama ?? '-' }}
+                                </a>
+                            </td>
+
+                            <td class="px-4 py-3 border">
+                                {{ $a->nomor_induk }}
+                            </td>
+
+                            <td class="px-4 py-3 border">
+                                {{ $a->pengguna->cabangGedung->lokasi ?? '-' }}
+                            </td>
+
+                            <td class="px-4 py-3 border">
+                                @switch($a->kategori)
+                                    @case(1)
+                                        <span class="bg-green-600 text-white px-3 py-1 rounded-full">Masuk</span>
+                                        @break
+                                    @case(2)
+                                        <span class="bg-yellow-500 text-black px-3 py-1 rounded-full">Mulai</span>
+                                        @break
+                                    @case(3)
+                                        <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Selesai</span>
+                                        @break
+                                    @case(4)
+                                        <span class="bg-gray-600 text-white px-3 py-1 rounded-full">Pulang</span>
+                                        @break
+                                @endswitch
+                            </td>
+
+                            <td class="px-4 py-3 border text-center">
+                                @if($a->status === 'tepat')
+                                    <span class="bg-green-600 text-white px-3 py-1 rounded-full">Tepat</span>
+                                @elseif($a->status === 'telat')
+                                    <span class="bg-red-600 text-white px-3 py-1 rounded-full">Telat</span>
+                                @else
+                                    <span class="bg-gray-200 px-3 py-1 rounded-full">-</span>
+                                @endif
+                            </td>
+
+                            <td class="px-4 py-3 border">
+                                {{ $a->idmesin }}
+                            </td>
                         </tr>
-                    </thead>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-10 text-gray-500">
+                                <i class="bi bi-inbox text-3xl block mb-2"></i>
+                                Data tidak ditemukan
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
 
-                    <tbody>
-                        @forelse($absensis as $a)
-                            <tr class="hover:bg-blue-50 transition text-gray-800">
-                                <td class="px-6 py-4 border font-medium">{{ $a->display_absen ?? ($a->absen_at ?? '-') }}</td>
-                                <td class="px-6 py-4 border font-semibold">
-                                    <a href="{{ route('absensi.pengguna', $a->nomor_induk) }}"
-                                        class="text-blue-600 hover:text-blue-800 hover:underline">
-                                        {{ $a->pengguna->nama ?? '-' }}
-                                    </a>
-                                </td>
-                                <td class="px-6 py-4 border">{{ $a->nomor_induk }}</td>
-                                <td class="px-6 py-4 border">
-                                    {{ $a->pengguna->cabangGedung->lokasi ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 border">
-                                    @switch($a->kategori)
-                                        @case(1)
-                                            <span class="px-4 py-2 rounded-full bg-green-600 text-white font-semibold">
-                                                Masuk
-                                            </span>
-                                        @break
-
-                                        @case(2)
-                                            <span class="px-4 py-2 rounded-full bg-yellow-500 text-black font-semibold">
-                                                Mulai Istirahat
-                                            </span>
-                                        @break
-
-                                        @case(3)
-                                            <span class="px-4 py-2 rounded-full bg-blue-500 text-white font-semibold">
-                                                Selesai Istirahat
-                                            </span>
-                                        @break
-
-                                        @case(4)
-                                            <span class="px-4 py-2 rounded-full bg-gray-600 text-white font-semibold">
-                                                Pulang
-                                            </span>
-                                        @break
-
-                                        @default
-                                            -
-                                    @endswitch
-                                </td>
-                                <td class="px-6 py-4 border text-center">
-                                    @if(!empty($a->status_label))
-                                        <span class="px-3 py-1 rounded-full font-semibold {{ $a->warna ?? '' }}">
-                                            {{ $a->status_label }}
-                                        </span>
-                                    @elseif(is_null($a->status))
-                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
-                                    @elseif($a->status === 'tepat')
-                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">Tepat</span>
-                                    @else
-                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">Telat</span>
-                                    @endif
-                                </td>
-
-                                <td class="px-6 py-4 border">{{ $a->idmesin }}</td>
-                            </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-10 text-gray-500 text-lg">
-                                        <i class="bi bi-inbox text-3xl block mb-2"></i>
-                                        Data tidak ditemukan
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-
-                    </table>
-                </div>
-            </div>
-
+            </table>
         </div>
-    @endsection
+    </div>
+
+</div>
+
+{{-- ================= JS ================= --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<script>
+$(document).ready(function () {
+    $('#absensiTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[0, 'desc']],
+
+        dom:
+            "<'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2'Bf>" +
+            "<'overflow-x-auto't>" +
+            "<'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2'lip>",
+
+        buttons: [
+            { extend: 'excel', title: 'Laporan Absensi' },
+            {
+                extend: 'pdf',
+                title: 'Laporan Absensi',
+                orientation: 'landscape',
+                pageSize: 'A4'
+            },
+            { extend: 'print', title: 'Laporan Absensi' },
+            'colvis'
+        ],
+
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            paginate: {
+                previous: "‹",
+                next: "›"
+            },
+            zeroRecords: "Data tidak ditemukan"
+        }
+    });
+});
+</script>
+
+@endsection

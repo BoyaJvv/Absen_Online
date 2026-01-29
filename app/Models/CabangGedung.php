@@ -24,15 +24,7 @@ class CabangGedung extends Model
         'aktif',
     ];
 
-    // 🔹 Jadwal
-    public function jadwalHarian()
-    {
-        return $this->hasMany(
-            JadwalHarian::class,
-            'cabang_gedung_id',
-            'id'
-        );
-    }
+   
 
     // 🔹 Pengguna di cabang ini
     public function penggunas()
