@@ -3,131 +3,88 @@
 namespace App\Http\Controllers;
 
 use App\Models\CabangGedung;
-use App\Models\JadwalHarian;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class CabangGedungController extends Controller
 {
-    /**
-     * =========================
-     * INDEX
-     * =========================
-     */
     public function index()
     {
-        $data = CabangGedung::with([
-            'jadwalHarian' => function ($q) {
-                $q->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')");
-            }
-        ])->get();
-
+        $data = CabangGedung::orderBy('lokasi')->get();
         return view('cabang_gedung.index', compact('data'));
     }
 
-    /**
-     * =========================
-     * STORE (ADD CABANG + JADWAL)
-     * =========================
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'lokasi' => 'required|string',
-            'jadwal' => 'required|array',
+            'lokasi' => 'required',
+            'jam_masuk' => 'required',
+            'jam_pulang' => 'required',
+            'istirahat_mulai' => 'required',
+            'istirahat_selesai' => 'required',
+            'hari_libur' => 'nullable|array',
+            'zona_waktu' => 'required',
         ]);
 
-        DB::transaction(function () use ($request) {
+        CabangGedung::create([
+            'lokasi' => $request->lokasi,
+            'jam_masuk' => $request->jam_masuk,
+            'jam_pulang' => $request->jam_pulang,
+            'istirahat_mulai' => $request->istirahat_mulai,
+            'istirahat_selesai' => $request->istirahat_selesai,
+            'hari_libur' => $request->hari_libur
+                ? implode(',', $request->hari_libur)
+                : null,
+            'zona_waktu' => $request->zona_waktu,
+            'aktif' => 1,
+        ]);
 
-            // Simpan cabang
-            $cabang = CabangGedung::create([
-                'lokasi' => $request->lokasi,
-                'zona_waktu' => 1,
-                'aktif' => 1,
-            ]);
-
-            // Simpan jadwal harian
-            foreach ($request->jadwal as $hari => $j) {
-
-                $libur = isset($j['libur']);
-
-                JadwalHarian::create([
-                    'cabang_gedung_id' => $cabang->id,
-                    'hari' => $hari,
-                    'jam_masuk' => $libur ? null : ($j['jam_masuk'] ?? null),
-                    'jam_pulang' => $libur ? null : ($j['jam_pulang'] ?? null),
-                    'istirahat1_mulai' => $libur ? null : ($j['istirahat1_mulai'] ?? null),
-                    'istirahat1_selesai' => $libur ? null : ($j['istirahat1_selesai'] ?? null),
-                    'istirahat2_mulai' => $libur ? null : ($j['istirahat2_mulai'] ?? null),
-                    'istirahat2_selesai' => $libur ? null : ($j['istirahat2_selesai'] ?? null),
-                    'keterangan' => $libur ? 'libur' : 'kerja',
-                    'libur' => $libur,
-                ]);
-            }
-        });
-
-        return back()->with('success', 'Cabang & jadwal berhasil disimpan');
+        return back()->with('success', 'Cabang berhasil ditambahkan');
     }
 
-    /**
-     * =========================
-     * EDIT PAGE
-     * =========================
-     */
     public function edit($id)
     {
-        $cabang = CabangGedung::with('JadwalHarian')->findOrFail($id);
-
-        // biar gampang dipakai di blade
-        $jadwal = $cabang->jadwalHarian->keyBy('hari');
-
-        return view('cabang_gedung.edit', compact('cabang', 'jadwal'));
+        $cabang = CabangGedung::findOrFail($id);
+        return view('cabang_gedung.edit', compact('cabang'));
     }
 
-    /**
-     * =========================
-     * UPDATE CABANG + JADWAL
-     * =========================
-     */
     public function update(Request $request, $id)
     {
-        $cabang = CabangGedung::findOrFail($id); // Memanggil data
-        $daftar_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']; // Mention 7 hari
+        $request->validate([
+            'lokasi' => 'required',
+            'jam_masuk' => 'required',
+            'jam_pulang' => 'required',
+            'istirahat_mulai' => 'required',
+            'istirahat_selesai' => 'required',
+            'hari_libur' => 'nullable|array',
+            'zona_waktu' => 'required',
+        ]);
 
-        foreach ($daftar_hari as $hari) {
-            // Ambil data input berdasarkan hari
-            $inputHari = $request->input("jadwal.$hari");
+        $cabang = CabangGedung::findOrFail($id);
 
-            $cabang->jadwalHarian()->updateOrCreate(
-                ['hari' => $hari], // Kunci pencarian
-                [
-                    'libur'      => isset($inputHari['libur']),
-                    'jam_masuk'  => isset($inputHari['libur']) ? null : $inputHari['jam_masuk'],
-                    'jam_pulang' => isset($inputHari['libur']) ? null : $inputHari['jam_pulang'],
-                    'istirahat1_mulai' => isset($inputHari['libur']) ? null : $inputHari['istirahat1_mulai'],
-                    'istirahat1_selesai' => isset($inputHari['libur']) ? null : $inputHari['istirahat1_selesai'],
-                    'istirahat2_mulai' => isset($inputHari['libur']) ? null : $inputHari['istirahat2_mulai'],
-                    'istirahat2_selesai' => isset($inputHari['libur']) ? null : $inputHari['istirahat2_selesai'],
-                    'keterangan' => isset($inputHari['libur']) ? null : 'kerja', 
-                ]
-            );
-        }
+        $cabang->update([
+            'lokasi' => $request->lokasi,
+            'jam_masuk' => $request->jam_masuk,
+            'jam_pulang' => $request->jam_pulang,
+            'istirahat_mulai' => $request->istirahat_mulai,
+            'istirahat_selesai' => $request->istirahat_selesai,
+            'hari_libur' => $request->hari_libur
+                ? implode(',', $request->hari_libur)
+                : null,
+            'zona_waktu' => $request->zona_waktu,
+        ]);
 
-        return redirect()->back()->with('success', 'Jadwal berhasil diperbarui.');
+        return redirect()->route('cabang-gedung.index')
+            ->with('success', 'Cabang berhasil diupdate');
     }
 
-    /**
-     * =========================
-     * DELETE
-     * =========================
-     */
     public function destroy($id)
     {
-        DB::transaction(function () use ($id) {
-            JadwalHarian::where('cabang_gedung_id', $id)->delete();
-            CabangGedung::where('id', $id)->delete();
-        });
+        $cabang = CabangGedung::findOrFail($id);
 
-        return back()->with('success', 'Cabang berhasil dihapus');
+        // toggle aktif / nonaktif
+        $cabang->aktif = $cabang->aktif == 1 ? 0 : 1;
+        $cabang->save();
+
+        return back()->with('success', 'Status cabang diperbarui');
     }
 }

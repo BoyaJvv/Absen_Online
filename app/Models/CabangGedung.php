@@ -3,36 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\JadwalHarian;
-use App\Models\Pengguna;
 
 class CabangGedung extends Model
 {
     protected $table = 'cabang_gedung';
-    public $timestamps = false;
 
     protected $fillable = [
         'lokasi',
         'jam_masuk',
         'jam_pulang',
-        'istirahat1_mulai',
-        'istirahat1_selesai',
-        'istirahat2_mulai',
-        'istirahat2_selesai',
+        'istirahat_mulai',
+        'istirahat_selesai',
         'hari_libur',
         'zona_waktu',
-        'aktif',
+        'aktif'
     ];
 
-   
-
-    // 🔹 Pengguna di cabang ini
-    public function penggunas()
-    {
-        return $this->hasMany(
-            Pengguna::class,
-            'cabang_gedung',
-            'id'
-        );
-    }
+    public $timestamps = false;
 }

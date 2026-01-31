@@ -2,122 +2,122 @@
 
 @section('content')
 
-<a href="{{ url('/cabang-gedung') }}" class="mb-4 inline-block bg-gray-500 text-white px-4 py-2 rounded">
-    ← Kembali
+<a href="{{ route('cabang-gedung.index') }}"
+   class="mb-4 inline-block bg-gray-500 text-white px-4 py-2 rounded">
+← Kembali
 </a>
 
-<div class="bg-white border rounded-lg shadow p-6">
-    <form method="POST" action="{{ route('cabang-gedung.update', $cabang->id) }}">
-        @csrf
-        @method('PUT')
+<div class="bg-white border rounded-lg shadow p-6 max-w-xl">
 
-        <h2 class="text-xl font-semibold mb-4">Edit Cabang & Jadwal</h2>
+<form method="POST"
+      action="{{ route('cabang-gedung.update', $cabang->id) }}">
+@csrf
+@method('PUT')
 
-        {{-- NAMA CABANG --}}
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Lokasi Cabang</label>
-            <input type="text" name="lokasi" value="{{ $cabang->lokasi }}" class="w-full border rounded px-3 py-2" required>
-        </div>
+<h2 class="text-lg font-semibold mb-4">
+Edit Cabang Gedung
+</h2>
 
-        <table class="w-full border text-sm mb-4">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="border p-2">Hari</th>
-                    <th class="border p-2">Libur</th>
-                    <th class="border p-2">Masuk</th>
-                    <th class="border p-2">Pulang</th>
-                    <th class="border p-2">Istirahat 1 (Mulai - Selesai)</th>
-                    <th class="border p-2">Istirahat 2 (Mulai - Selesai)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    // Kita definisikan 7 hari agar tabel selalu lengkap
-                    $daftar_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-                @endphp
-
-                @foreach($daftar_hari as $hari)
-                    @php
-                        // Ambil data hari ini dari variabel $jadwal (keyBy) yang dikirim Controller
-                        $j = $jadwal->get($hari);
-                        // Jika data tidak ada atau status libur true
-                        $isLibur = $j ? $j->libur : (in_array($hari, ['Sabtu', 'Minggu']));
-                    @endphp
-                    <tr class="hari-row">
-                        <td class="border p-2 font-bold">{{ $hari }}</td>
-
-                        <td class="border p-2 text-center">
-                            <input type="checkbox" 
-                                   name="jadwal[{{ $hari }}][libur]" 
-                                   class="check-libur"
-                                   {{ $isLibur ? 'checked' : '' }}>
-                        </td>
-
-                        <td class="border p-2">
-                            <input type="time" name="jadwal[{{ $hari }}][jam_masuk]" 
-                                   value="{{ $j ? $j->jam_masuk : '' }}" 
-                                   class="border rounded w-full input-field {{ $isLibur ? 'bg-gray-100' : '' }}" {{ $isLibur ? 'readonly' : '' }}>
-                        </td>
-
-                        <td class="border p-2">
-                            <input type="time" name="jadwal[{{ $hari }}][jam_pulang]" 
-                                   value="{{ $j ? $j->jam_pulang : '' }}" 
-                                   class="border rounded w-full input-field {{ $isLibur ? 'bg-gray-100' : '' }}" {{ $isLibur ? 'readonly' : '' }}>
-                        </td>
-
-                        <td class="border p-2">
-                            <div class="flex gap-1">
-                                <input type="time" name="jadwal[{{ $hari }}][istirahat1_mulai]" 
-                                       value="{{ $j ? $j->istirahat1_mulai : '' }}" 
-                                       class="border rounded w-1/2 input-field {{ $isLibur ? 'bg-gray-100' : '' }}" {{ $isLibur ? 'readonly' : '' }}>
-                                <input type="time" name="jadwal[{{ $hari }}][istirahat1_selesai]" 
-                                       value="{{ $j ? $j->istirahat1_selesai : '' }}" 
-                                       class="border rounded w-1/2 input-field {{ $isLibur ? 'bg-gray-100' : '' }}" {{ $isLibur ? 'readonly' : '' }}>
-                            </div>
-                        </td>
-
-                        <td class="border p-2">
-                            <div class="flex gap-1">
-                                <input type="time" name="jadwal[{{ $hari }}][istirahat2_mulai]" 
-                                       value="{{ $j ? $j->istirahat2_mulai : '' }}" 
-                                       class="border rounded w-1/2 input-field {{ $isLibur ? 'bg-gray-100' : '' }}" {{ $isLibur ? 'readonly' : '' }}>
-                                <input type="time" name="jadwal[{{ $hari }}][istirahat2_selesai]" 
-                                       value="{{ $j ? $j->istirahat2_selesai : '' }}" 
-                                       class="border rounded w-1/2 input-field {{ $isLibur ? 'bg-gray-100' : '' }}" {{ $isLibur ? 'readonly' : '' }}>
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <div class="flex justify-end">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
-                Simpan Perubahan
-            </button>
-        </div>
-    </form>
+{{-- LOKASI --}}
+<div class="mb-3">
+<label class="text-sm">Lokasi</label>
+<input type="text"
+       name="lokasi"
+       value="{{ $cabang->lokasi }}"
+       class="w-full border rounded px-3 py-2"
+       required>
 </div>
 
-<script>
-    // Script agar input jam otomatis abu-abu dan tidak bisa diisi jika "Libur" dicentang
-    document.querySelectorAll('.check-libur').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            let row = this.closest('tr');
-            let inputs = row.querySelectorAll('.input-field');
-            
-            inputs.forEach(input => {
-                if (this.checked) {
-                    input.value = '';
-                    input.classList.add('bg-gray-100');
-                    input.readOnly = true;
-                } else {
-                    input.classList.remove('bg-gray-100');
-                    input.readOnly = false;
-                }
-            });
-        });
-    });
-</script>
+{{-- JAM MASUK --}}
+<div class="mb-3">
+<label class="text-sm">Jam Masuk</label>
+<input type="time"
+       name="jam_masuk"
+       value="{{ $cabang->jam_masuk }}"
+       class="w-full border rounded px-3 py-2"
+       required>
+</div>
+
+{{-- JAM PULANG --}}
+<div class="mb-3">
+<label class="text-sm">Jam Pulang</label>
+<input type="time"
+       name="jam_pulang"
+       value="{{ $cabang->jam_pulang }}"
+       class="w-full border rounded px-3 py-2"
+       required>
+</div>
+
+{{-- ISTIRAHAT MULAI --}}
+<div class="mb-3">
+<label class="text-sm">Mulai Istirahat</label>
+<input type="time"
+       name="istirahat_mulai"
+       value="{{ $cabang->istirahat_mulai }}"
+       class="w-full border rounded px-3 py-2"
+       required>
+</div>
+
+{{-- ISTIRAHAT SELESAI --}}
+<div class="mb-3">
+<label class="text-sm">Selesai Istirahat</label>
+<input type="time"
+       name="istirahat_selesai"
+       value="{{ $cabang->istirahat_selesai }}"
+       class="w-full border rounded px-3 py-2"
+       required>
+</div>
+
+{{-- HARI LIBUR --}}
+<div class="mb-3">
+<label class="text-sm">Hari Libur</label>
+<div class="grid grid-cols-4 gap-2 mt-1">
+
+@php
+$hari = [
+0=>'Minggu',
+1=>'Senin',
+2=>'Selasa',
+3=>'Rabu',
+4=>'Kamis',
+5=>'Jumat',
+6=>'Sabtu'
+];
+
+$libur = explode(',', $cabang->hari_libur);
+@endphp
+
+@foreach($hari as $k=>$v)
+<label class="text-xs">
+<input type="checkbox"
+       name="hari_libur[]"
+       value="{{ $k }}"
+       {{ in_array($k, $libur) ? 'checked' : '' }}>
+{{ $v }}
+</label>
+@endforeach
+
+</div>
+</div>
+
+{{-- ZONA WAKTU --}}
+<div class="mb-4">
+<label class="text-sm">Zona Waktu</label>
+<select name="zona_waktu"
+        class="w-full border rounded px-3 py-2">
+<option value="1" {{ $cabang->zona_waktu==1?'selected':'' }}>WIB</option>
+<option value="2" {{ $cabang->zona_waktu==2?'selected':'' }}>WITA</option>
+<option value="3" {{ $cabang->zona_waktu==3?'selected':'' }}>WIT</option>
+</select>
+</div>
+
+<div class="flex justify-end">
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
+Simpan Perubahan
+</button>
+</div>
+
+</form>
+</div>
 
 @endsection
