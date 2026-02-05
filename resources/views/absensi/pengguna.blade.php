@@ -110,15 +110,20 @@
                                 <td class="px-6 py-4 border {{ $absensi->warna }}">
                                     {{ $absensi->selisih_menit !== null ? $absensi->selisih_menit . ' Menit' : '-' }}
                                 </td>
-                                <td class="px-6 py-4 border text-center">
-                                    @if(is_null($absensi->status))
-                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
-                                    @elseif(($absensi->status ?? '') === 'tepat')
-                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">{{ $absensi->status_label ?? 'Tepat Waktu' }}</span>
-                                    @else
-                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">{{ $absensi->status_label ?? 'Terlambat' }}</span>
-                                    @endif
-                                </td>
+                              <td class="px-6 py-4 border text-center">
+    @if(is_null($absensi->status))
+        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
+    @elseif($absensi->warna === 'text-green-600')
+        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">
+            {{ $absensi->status_label }}
+        </span>
+    @else
+        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">
+            {{ $absensi->status_label }}
+        </span>
+    @endif
+</td>
+
                                 <td class="px-6 py-4 border">
                                     {{ $cabang->lokasi ?? '-' }}
                                 </td>

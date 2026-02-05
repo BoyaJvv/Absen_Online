@@ -29,7 +29,7 @@ class AbsensiController extends Controller
 
         // Filter Tanggal
         if ($request->filled('awal') && $request->filled('akhir')) {
-            $query->whereBetween('absen_at', [
+            $query->whereBetween('absen', [
                 $request->awal . ' 00:00:00',
                 $request->akhir . ' 23:59:59'
             ]);
@@ -45,7 +45,7 @@ class AbsensiController extends Controller
             });
         }
 
-        $absensis = $query->orderBy('absen_at', 'asc')->get();
+        $absensis = $query->orderBy('absen', 'asc')->get();
 
         // Proses status tiap absensi
         foreach ($absensis as $absensi) {
@@ -56,9 +56,9 @@ class AbsensiController extends Controller
             $absensi->display_batas = null;
             $absensi->selisih_menit = null;
 
-            if (empty($absensi->absen_at)) continue;
+            if (empty($absensi->absen)) continue;
 
-            $waktuAbsen = Carbon::parse($absensi->absen_at);
+            $waktuAbsen = Carbon::parse($absensi->absen);
 
             // Tentukan kategori label
             switch ((string)$absensi->kategori) {
@@ -91,7 +91,7 @@ class AbsensiController extends Controller
                 }
             }
 
-            $absensi->status = $isTepat ? 'tepat' : 'telat';
+            $absensi->status = $isTepat ? 'tepat_waktu' : 'telat';
             $absensi->status_label = $isTepat ? 'Tepat Waktu' : 'Terlambat';
             $absensi->warna = $isTepat ? 'text-green-600' : 'text-red-600';
 
@@ -132,7 +132,7 @@ class AbsensiController extends Controller
     {
         $data = $request->validate([
             'nomor_induk' => 'required|exists:pengguna,nomor_induk',
-            'absen_at'    => 'required|datetime',
+            'absen'    => 'required|datetime',
             'kategori'    => 'required|in:1,2,3,4',
             'idmesin'     => 'nullable',
         ]);
@@ -149,7 +149,7 @@ class AbsensiController extends Controller
     {
         $today = now()->format('Y-m-d');
         
-        $todayStats = Absensi::whereDate('absen_at', $today)
+        $todayStats = Absensi::whereDate('absen', $today)
             ->selectRaw('kategori, count(*) as total')
             ->groupBy('kategori')
             ->get()
@@ -158,8 +158,8 @@ class AbsensiController extends Controller
         $monthStart = now()->startOfMonth()->format('Y-m-d');
         $monthEnd = now()->endOfMonth()->format('Y-m-d');
         
-        $monthlyStats = Absensi::whereBetween('absen_at', [$monthStart, $monthEnd])
-            ->selectRaw('DATE(absen_at) as tanggal, count(*) as total')
+        $monthlyStats = Absensi::whereBetween('absen', [$monthStart, $monthEnd])
+            ->selectRaw('DATE(absen) as tanggal, count(*) as total')
             ->groupBy('tanggal')
             ->orderBy('tanggal')
             ->get();
@@ -175,4 +175,96 @@ class AbsensiController extends Controller
             'monthly' => $monthlyStats
         ]);
     }
+
+public function storeFromMachine(Request $request)
+{
+    $tag = $request->query('tag');
+    $idmesin = $request->query('idmesin');
+    $kategori = $request->query('kategori');
+
+    if (!$tag || !$kategori) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Parameter kurang'
+        ], 400);
+    }
+
+    $pengguna = Pengguna::where('tag', $tag)->first();
+
+    if (!$pengguna) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Kartu tidak terdaftar'
+        ], 404);
+    }
+
+    // ================= TAMBAHAN LOGIC =================
+    $now = now();
+
+    $jamTarget = $this->defaultJam[(string)$kategori] ?? null;
+    $absenMaks = null;
+
+    if ($jamTarget) {
+        $absenMaks = Carbon::parse(
+            $now->toDateString() . ' ' . $jamTarget
+        );
+    }
+    // ==================================================
+
+    $absensi = Absensi::create([
+        'nomor_induk' => $pengguna->nomor_induk,
+        'absen' => $now,
+        'absen_maks' => $absenMaks,
+        'kategori' => $kategori,
+        'idmesin' => $idmesin
+    ]);
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Absensi tersimpan',
+        'data' => $absensi
+    ]);
+}
+
+
+        
+//     }
+//     public function storeFromMachine(Request $request)
+// {
+//     $tag = $request->query('tag');
+//     $idmesin = $request->query('idmesin');
+//     $kategori = $request->query('kategori');
+
+//     if (!$tag || !$kategori) {
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Parameter kurang'
+//         ], 400);
+//     }
+
+//     // cari pengguna berdasarkan RFID
+//     $pengguna = Pengguna::where('tag', $tag)->first();
+
+
+//     if (!$pengguna) {
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Kartu tidak terdaftar'
+//         ], 404);
+//     }
+
+//     $absensi = Absensi::create([
+//         'nomor_induk' => $pengguna->nomor_induk,
+//         'absen' => now(),
+//         'kategori' => $kategori,
+//         'idmesin' => $idmesin
+//     ]);
+
+//     return response()->json([
+//         'status' => 'success',
+//         'message' => 'Absensi tersimpan',
+//         'data' => $absensi
+//     ]);
+// }
+
 }

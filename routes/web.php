@@ -12,6 +12,13 @@ use App\Http\Controllers\MesinController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AbsensiPenggunaController;
 use App\Http\Controllers\DendaController;
+use App\Http\Controllers\ScanController;
+
+
+//================= SCAN ==================
+Route::get('/cek-tag', [ScanController::class, 'index'])->name('cek-tag');
+Route::post('/cek-tag', [ScanController::class, 'cek'])->name('cek-tag.post');
+
 
 
 // ================= ADMIN =================
@@ -158,4 +165,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/absensi-machine', [AbsensiController::class, 'storeFromMachine']);
 require __DIR__.'/auth.php';

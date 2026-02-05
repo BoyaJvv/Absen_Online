@@ -29,10 +29,11 @@ class AbsensiPenggunaController extends Controller
         $firstDay = $request->get('awal', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $lastDay  = $request->get('akhir', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
-        // Ambil data absensi
+        // Ambil data absensi dengan query yang konsisten
         $query = Absensi::with(['mesin', 'pengguna.cabangGedung'])
             ->where('nomor_induk', $nomor_induk)
-            ->whereBetween('absen_at', [$firstDay . ' 00:00:00', $lastDay . ' 23:59:59']);
+            ->whereBetween('absen', [$firstDay . ' 00:00:00', $lastDay . ' 23:59:59'])
+            ->orderBy('absen', 'asc');
 
         if ($request->filled('kategori') && $request->kategori != '0') {
             $query->where('kategori', $request->kategori);
@@ -40,66 +41,8 @@ class AbsensiPenggunaController extends Controller
 
         $absensis = $query->get();
 
-        // Proses tiap record
-        foreach ($absensis as $absensi) {
-            $absensi->status = null;
-            $absensi->status_label = null;
-            $absensi->warna = 'text-gray-700';
-            $absensi->display_absen = null;
-            $absensi->display_batas = null;
-            $absensi->selisih_menit = null;
-            $absensi->kategori_label = '-';
-
-            if (empty($absensi->absen_at)) continue;
-
-            $waktuAbsen = Carbon::parse($absensi->absen_at);
-
-            // Tentukan kategori label
-            switch ((string)$absensi->kategori) {
-                case '1': $absensi->kategori_label = 'Masuk'; break;
-                case '2': $absensi->kategori_label = 'Mulai Istirahat'; break;
-                case '3': $absensi->kategori_label = 'Selesai Istirahat'; break;
-                case '4': $absensi->kategori_label = 'Pulang'; break;
-            }
-
-            // Tentukan target jam ±15 menit
-            $tgl = $waktuAbsen->toDateString();
-            $jam = $this->defaultJam[(string)$absensi->kategori] ?? null;
-            $isTepat = false;
-
-            if ($jam) {
-                $target = Carbon::parse($tgl . ' ' . $jam);
-
-                switch ((string)$absensi->kategori) {
-                    case '1': // Masuk
-                        $isTepat = $waktuAbsen->between($target->copy()->subMinutes(15), $target->copy()->addMinutes(15));
-                        break;
-                    case '2': // Mulai Istirahat
-                    case '3': // Selesai Istirahat
-                        $isTepat = $waktuAbsen->lessThanOrEqualTo($target->copy()->addMinutes(15));
-                        break;
-                    case '4': // Pulang
-                        $isTepat = $waktuAbsen->greaterThanOrEqualTo($target);
-                        break;
-                }
-            }
-
-            $absensi->status = $isTepat ? 'tepat' : 'telat';
-            $absensi->status_label = $isTepat ? 'Tepat Waktu' : 'Terlambat';
-            $absensi->warna = $isTepat ? 'text-green-600' : 'text-red-600';
-
-            // Ambil timezone cabang
-            $cabangModel = $pengguna->cabangGedung ?? CabangGedung::find($pengguna->cabang_gedung);
-            $zona = $cabangModel->zona_waktu ?? '1';
-            $zonaWaktu = $zona == '1' ? 'WIB' : ($zona == '2' ? 'WITA' : 'WIT');
-            $seconds = $zona == '1' ? 25200 : ($zona == '2' ? 28800 : 32400);
-
-            $displayWaktu = $waktuAbsen->copy()->addSeconds($seconds);
-            $displayTarget = isset($target) ? $target->copy()->addSeconds($seconds) : null;
-            $absensi->display_absen = $displayWaktu->format('Y-m-d H:i:s') . ' ' . $zonaWaktu;
-            $absensi->display_batas = $displayTarget ? $displayTarget->format('Y-m-d H:i:s') : null;
-            $absensi->selisih_menit = isset($target) ? round(abs($waktuAbsen->diffInSeconds($target)) / 60) : null;
-        }
+        // Proses tiap record dengan metode yang sama
+        $absensis = $this->processAbsensiData($absensis, $pengguna);
 
         // Ambil cabang
         $cabang = CabangGedung::find($pengguna->cabang_gedung);
@@ -144,6 +87,102 @@ class AbsensiPenggunaController extends Controller
         ));
     }
 
+    /**
+     * Proses data absensi (metode yang sama dengan AbsensiController)
+     */
+    private function processAbsensiData($absensis, $pengguna = null)
+    {
+        foreach ($absensis as $absensi) {
+            // Set default values
+            $absensi->status = null;
+            $absensi->status_label = null;
+            $absensi->warna = 'text-gray-700';
+            $absensi->display_absen = null;
+            $absensi->display_batas = null;
+            $absensi->selisih_menit = null;
+            $absensi->kategori_label = '-';
+
+            if (empty($absensi->absen)) continue;
+
+            $waktuAbsen = Carbon::parse($absensi->absen);
+
+            // Tentukan kategori label
+            $absensi->kategori_label = $this->getKategoriLabel($absensi->kategori);
+
+            // Tentukan target jam
+            $tgl = $waktuAbsen->toDateString();
+            $jam = $this->defaultJam[(string)$absensi->kategori] ?? null;
+            $isTepat = false;
+            $target = null;
+
+            if ($jam) {
+                $target = Carbon::parse($tgl . ' ' . $jam);
+                $isTepat = $this->checkIsTepat($waktuAbsen, $target, $absensi->kategori);
+            }
+
+            // Set status
+            $absensi->status = $isTepat ? 'tepat_waktu' : 'telat';
+            $absensi->status_label = $isTepat ? 'Tepat Waktu' : 'Terlambat';
+            $absensi->warna = $isTepat ? 'text-green-600' : 'text-red-600';
+
+            // Ambil timezone cabang
+            if ($pengguna) {
+                $cabangModel = $pengguna->cabangGedung ?? CabangGedung::find($pengguna->cabang_gedung);
+            } else {
+                $cabangModel = $absensi->pengguna->cabangGedung ?? CabangGedung::find($absensi->pengguna->cabang_gedung);
+            }
+            
+            $zona = $cabangModel->zona_waktu ?? '1';
+            $zonaWaktu = $zona == '1' ? 'WIB' : ($zona == '2' ? 'WITA' : 'WIT');
+            $seconds = $zona == '1' ? 25200 : ($zona == '2' ? 28800 : 32400);
+
+            // Format display dengan timezone
+            $displayWaktu = $waktuAbsen->copy()->addSeconds($seconds);
+            $displayTarget = $target ? $target->copy()->addSeconds($seconds) : null;
+            
+            $absensi->display_absen = $displayWaktu->format('Y-m-d H:i:s') . ' ' . $zonaWaktu;
+            $absensi->display_batas = $displayTarget ? $displayTarget->format('Y-m-d H:i:s') . ' ' . $zonaWaktu : null;
+            $absensi->selisih_menit = $target ? round(abs($waktuAbsen->diffInSeconds($target)) / 60) : null;
+        }
+
+        return $absensis;
+    }
+
+    /**
+     * Get kategori label
+     */
+    private function getKategoriLabel($kategori)
+    {
+        switch ((string)$kategori) {
+            case '1': return 'Masuk';
+            case '2': return 'Mulai Istirahat';
+            case '3': return 'Selesai Istirahat';
+            case '4': return 'Pulang';
+            default: return '-';
+        }
+    }
+
+    /**
+     * Check apakah absensi tepat waktu
+     */
+    private function checkIsTepat($waktuAbsen, $target, $kategori)
+    {
+        switch ((string)$kategori) {
+            case '1': // Masuk
+                return $waktuAbsen->between(
+                    $target->copy()->subMinutes(15),
+                    $target->copy()->addMinutes(15)
+                );
+            case '2': // Mulai Istirahat
+            case '3': // Selesai Istirahat
+                return $waktuAbsen->lessThanOrEqualTo($target->copy()->addMinutes(15));
+            case '4': // Pulang
+                return $waktuAbsen->greaterThanOrEqualTo($target);
+            default:
+                return false;
+        }
+    }
+
     private function getHariLibur($cabang)
     {
         if (!$cabang || empty($cabang->hari_libur)) return [];
@@ -160,9 +199,9 @@ class AbsensiPenggunaController extends Controller
         ];
 
         foreach ($absensis as $absensi) {
-            if (empty($absensi->absen_at)) continue;
+            if (empty($absensi->absen)) continue;
 
-            $waktuAbsen = Carbon::parse($absensi->absen_at);
+            $waktuAbsen = Carbon::parse($absensi->absen);
             $tgl = $waktuAbsen->toDateString();
             $kategori = (string)$absensi->kategori;
             $jam = $this->defaultJam[$kategori] ?? null;
@@ -170,23 +209,21 @@ class AbsensiPenggunaController extends Controller
             if (!$jam) continue;
 
             $target = Carbon::parse($tgl . ' ' . $jam);
-            $isTepat = false;
+
+            // Gunakan method checkIsTepat yang sama
+            $isTepat = $this->checkIsTepat($waktuAbsen, $target, $kategori);
 
             switch ($kategori) {
                 case '1':
-                    $isTepat = $waktuAbsen->between($target->copy()->subMinutes(15), $target->copy()->addMinutes(15));
                     $isTepat ? $stats['tepatMasuk']++ : $stats['terlambatMasuk']++;
                     break;
                 case '2':
-                    $isTepat = $waktuAbsen->lessThanOrEqualTo($target->copy()->addMinutes(15));
                     $isTepat ? $stats['tepatIstirahatMulai']++ : $stats['cepatIstirahatMulai']++;
                     break;
                 case '3':
-                    $isTepat = $waktuAbsen->lessThanOrEqualTo($target->copy()->addMinutes(15));
                     $isTepat ? $stats['tepatIstirahatSelesai']++ : $stats['cepatIstirahatSelesai']++;
                     break;
                 case '4':
-                    $isTepat = $waktuAbsen->greaterThanOrEqualTo($target);
                     $isTepat ? $stats['tepatPulang']++ : $stats['cepatPulang']++;
                     break;
             }
@@ -205,7 +242,7 @@ class AbsensiPenggunaController extends Controller
         // Tanggal absen per kategori
         $absensiByKategori = ['1'=>[], '2'=>[], '3'=>[], '4'=>[]];
         foreach ($absensis as $abs) {
-            if ($abs->absen_at) $absensiByKategori[$abs->kategori][] = Carbon::parse($abs->absen_at)->format('Y-m-d');
+            if ($abs->absen) $absensiByKategori[$abs->kategori][] = Carbon::parse($abs->absen)->format('Y-m-d');
         }
 
         $hariLiburInt = array_map('intval', $hariLibur);

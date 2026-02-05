@@ -101,9 +101,9 @@ class DashboardController extends Controller
 
         $query = Absensi::query()
             ->where('kategori', 1)
-            ->whereMonth('absen_at', $month)
-            ->whereYear('absen_at', $year)
-            ->whereNotNull('absen_at');
+            ->whereMonth('absen', $month)
+            ->whereYear('absen', $year)
+            ->whereNotNull('absen');
 
         // ✅ FILTER USER LOGIN (PALING PENTING)
         if ($userNomorInduk) {
@@ -119,7 +119,7 @@ class DashboardController extends Controller
 
         foreach ($query->get() as $row) {
 
-            $waktuAbsen = Carbon::parse($row->absen_at);
+            $waktuAbsen = Carbon::parse($row->absen);
             $hariIndex  = (int)$waktuAbsen->format('d') - 1;
 
             $jamMasuk = Carbon::parse(

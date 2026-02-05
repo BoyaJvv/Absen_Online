@@ -105,15 +105,26 @@ table.dataTable {
                                 @endswitch
                             </td>
 
-                            <td class="px-4 py-3 border text-center">
-                                @if($a->status === 'tepat')
+                           <td class="px-6 py-4 border text-center">
+                                    @if($a->status === 'tepat_waktu')
+                                        <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold">-</span>
+                                     @elseif($a->status === 'telat')
+                                        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-semibold">{{ $absensi->status_label ?? 'tepat_waktu' }}</span>
+                                    @else
+                                        <span class="px-3 py-1 rounded-full bg-red-600 text-white font-semibold">{{ $absensi->status_label ?? 'telat' }}</span>
+                                    @endif
+                                </td>
+
+
+                                {{-- <td class="px-4 py-3 border text-center">
+                                    @if($a->status === 'tepat')
                                     <span class="bg-green-600 text-white px-3 py-1 rounded-full">Tepat</span>
                                 @elseif($a->status === 'telat')
                                     <span class="bg-red-600 text-white px-3 py-1 rounded-full">Telat</span>
                                 @else
                                     <span class="bg-gray-200 px-3 py-1 rounded-full">-</span>
                                 @endif
-                            </td>
+                            </td> --}}
 
                             <td class="px-4 py-3 border">
                                 {{ $a->idmesin }}
