@@ -16,9 +16,8 @@ use App\Http\Controllers\ScanController;
 
 
 //================= SCAN ==================
-Route::get('/cek-tag', [ScanController::class, 'index'])->name('cek-tag');
-Route::post('/cek-tag', [ScanController::class, 'cek'])->name('cek-tag.post');
-
+// Route bisa diakses via GET (buka browser) dan POST (submit form)
+Route::match(['get', 'post'], '/pengguna/scan', [ScanController::class, 'index'])->name('pengguna.scan');    
 
 
 // ================= ADMIN =================

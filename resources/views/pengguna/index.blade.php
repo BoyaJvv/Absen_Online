@@ -37,7 +37,7 @@ table.dataTable {
         <h1 class="text-2xl font-semibold text-gray-800">Pengguna</h1>
 
         <div class="flex gap-2">
-            <a href="{{ url('scan') }}" target="_blank"
+            <a href="{{ url('pengguna/scan') }}" target="_blank"
                class="inline-flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
                 <i class="bi bi-upc-scan"></i> Cek Pengguna
             </a>
