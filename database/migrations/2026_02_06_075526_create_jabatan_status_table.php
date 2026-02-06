@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('jabatan_status', function (Blueprint $table) {
             $table->increments('id'); // INT UNSIGNED
 
-            $table->string('jabatan', 255);
+            $table->string('jabatan_status', 255);
 
             // Foreign key INT UNSIGNED
             $table->unsignedInteger('hak_akses')->nullable();
