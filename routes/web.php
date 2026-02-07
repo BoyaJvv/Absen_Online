@@ -37,7 +37,7 @@ Route::get('/absensi/pengguna', [AbsensiPenggunaController::class, 'rekapSaya'])
     ->name('absensi.pengguna.saya');
 
 
-Route::middleware('hakAkses:nusabot,full,general')->group(function () {
+Route::middleware(['auth', 'hakAkses:nusabot,full,general'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard.index');
 
