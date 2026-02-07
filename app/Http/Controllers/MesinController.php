@@ -21,7 +21,7 @@ class MesinController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'idmesin' => 'required|numeric',
+            'idmesin' => 'required|string',
             'id_cabang_gedung' => 'required|exists:cabang_gedung,id',
             'keterangan' => 'required|string',
         ]);
@@ -49,7 +49,7 @@ class MesinController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'idmesin' => 'required|numeric',
+            'idmesin' => 'required|string',
             'id_cabang_gedung' => 'required|exists:cabang_gedung,id',
             'keterangan' => 'required|string',
         ]);

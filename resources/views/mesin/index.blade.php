@@ -71,7 +71,7 @@
 
         <div class="mb-3">
             <label class="form-label">Kode Mesin</label>
-            <input type="number" name="idmesin" class="form-control"
+            <input type="string" name="idmesin" class="form-control"
                    value="{{ $editData->idmesin ?? '' }}" required>
         </div>
 
