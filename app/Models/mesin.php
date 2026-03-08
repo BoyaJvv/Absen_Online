@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\CabangGedung;
 
 class Mesin extends Model
 {
@@ -18,7 +17,7 @@ class Mesin extends Model
         'keterangan',
     ];
 
-    // 🔥 RELASI KE CABANG GEDUNG
+    // RELASI KE CABANG GEDUNG
     public function cabangGedung()
     {
         return $this->belongsTo(

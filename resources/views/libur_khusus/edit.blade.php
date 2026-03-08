@@ -1,46 +1,49 @@
-<div id="editModal"
-    class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
+<div id="modalEdit"
+    class="fixed inset-0 hidden items-center justify-center"
+    style="z-index: 9999999;">
 
-    <div class="bg-white rounded shadow w-full max-w-lg">
+    {{-- BACKDROP FULL LAYAR --}}
+    <div class="fixed inset-0 bg-black/70"></div>
 
-        {{-- HEADER --}}
-        <div class="border-b px-6 py-4 flex justify-between items-center">
-            <h3 class="font-semibold text-lg">Edit Libur Khusus</h3>
-            <button onclick="closeModal()" class="text-gray-500 hover:text-red-600">
-                ✕
+    {{-- MODAL BOX --}}
+    <div class="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Edit Libur Khusus</h2>
+            <button id="closeModal"
+                class="text-gray-500 hover:text-gray-700 text-2xl">
+                &times;
             </button>
         </div>
 
-        {{-- FORM --}}
-        <form id="editForm" method="POST">
+        <form id="formEdit" method="POST">
             @csrf
             @method('PUT')
 
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block mb-1 font-medium">Tanggal</label>
-                    <input type="date" id="editTanggal" name="tanggal"
-                        class="w-full border rounded px-3 py-2" required>
-                </div>
-
-                <div>
-                    <label class="block mb-1 font-medium">Keterangan</label>
-                    <textarea id="editKeterangan" name="keterangan" rows="3"
-                        class="w-full border rounded px-3 py-2"></textarea>
-                </div>
+            <div class="mb-4">
+                <label class="block mb-2 font-medium">Tanggal</label>
+                <input type="date" id="editTanggal" name="tanggal"
+                    class="w-full rounded-xl border px-4 py-3" required>
             </div>
 
-            {{-- FOOTER --}}
-            <div class="border-t px-6 py-4 text-right space-x-2">
-                <button type="button" onclick="closeModal()"
-                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+            <div class="mb-6">
+                <label class="block mb-2 font-medium">Keterangan</label>
+                <textarea id="editKeterangan" name="keterangan" rows="3"
+                    class="w-full rounded-xl border px-4 py-3"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" id="closeModal"
+                    class="px-4 py-2 rounded-lg border border-gray-300">
                     Batal
                 </button>
+
                 <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded">
-                    Simpan
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Update
                 </button>
             </div>
         </form>
+
     </div>
 </div>

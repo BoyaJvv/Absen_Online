@@ -12,6 +12,7 @@ use App\Http\Controllers\MesinController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AbsensiPenggunaController;
 use App\Http\Controllers\DendaController;
+
 use App\Http\Controllers\ScanController;
 
 
@@ -49,13 +50,14 @@ Route::middleware(['auth', 'hakAkses:nusabot,full,general'])->group(function () 
 
 Route::prefix('pengaturan')->middleware('hakAkses:nusabot,full')->group(function () {
     Route::get('denda', [DendaController::class, 'index'])->name('denda.index');
+    Route::get('denda/create', [DendaController::class, 'create'])->name('denda.create');
+    Route::post('denda', [DendaController::class, 'store'])->name('denda.store');
     Route::get('denda/{id}/edit', [DendaController::class, 'edit'])->name('denda.edit');
     Route::put('denda/{id}', [DendaController::class, 'update'])->name('denda.update');
+    Route::delete('denda/{id}', [DendaController::class, 'destroy'])->name('denda.destroy'); // Route Hapus
 });
 
-
 Route::middleware('hakAkses:nusabot,full')->group(function () {
-    Route::resource('mesin', MesinController::class);
     Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
     Route::post('/mesin', [MesinController::class, 'store'])->name('mesin.store');
     Route::get('/mesin/{id}/edit', [MesinController::class, 'edit'])->name('mesin.edit');

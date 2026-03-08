@@ -176,18 +176,18 @@ class AbsensiController extends Controller
         ]);
     }
 
-public function storeFromMachine(Request $request)
-{
-    $tag = $request->query('tag');
-    $idmesin = $request->query('idmesin');
-    $kategori = $request->query('kategori');
+    public function storeFromMachine(Request $request)
+    {
+        $tag = $request->query('tag');
+        $idmesin = $request->query('idmesin');
+        $kategori = $request->query('kategori');
 
-    if (!$tag || !$kategori) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Parameter kurang'
-        ], 400);
-    }
+        if (!$tag || !$kategori) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Parameter kurang'
+            ], 400);
+        }
 
     $pengguna = Pengguna::where('tag', $tag)->first();
 

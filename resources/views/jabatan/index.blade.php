@@ -142,7 +142,13 @@ $(document).ready(function () {
         searching: true,
         destroy: true,
         dom: 'Bftip',
-        buttons: ['copy', 'excel', 'pdf', 'print', 'colvis'],
+        buttons: [
+            { extend: 'copy', title: 'jabatan_status' },
+            { extend: 'excel', title: 'jabatan_status' },
+            { extend: 'pdf', title: 'jabatan_status' },
+            { extend: 'print', title: 'jabatan_status' },
+            'colvis'
+        ],
         language: {
             search: 'Cari:',
             info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',

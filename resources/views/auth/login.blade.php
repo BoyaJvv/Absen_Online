@@ -7,7 +7,7 @@
 
     <!-- Nomor Induk -->
     <div class="input-group mb-3">
-        <x-input-label for="email" :value="__('Email')" />
+        <x-input-label for="email" :value="__('Nomor Induk')" />
         <input id="nomor_induk"class="block mt-1 w-full" type="text" name="nomor_induk"  placeholder="Nomor Induk" value="{{ old('nomor_induk') }}" required autofocus>
         <div class="input-group-append">
             <div class="input-group-text"><span class="fas fa-envelope"></span></div>

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Mesin;
 use App\Models\CabangGedung;
+use Illuminate\Http\Request;
 
 class MesinController extends Controller
 {
@@ -17,48 +17,39 @@ class MesinController extends Controller
         return view('mesin.index', compact('mesin', 'cabang', 'editData'));
     }
 
-    // 🔥 STORE (INI YANG KURANG)
     public function store(Request $request)
     {
         $request->validate([
-            'idmesin' => 'required|string',
+            'idmesin' => 'required|string|max:255|unique:mesin,idmesin',
             'id_cabang_gedung' => 'required|exists:cabang_gedung,id',
-            'keterangan' => 'required|string',
+            'keterangan' => 'required|string|max:255',
         ]);
 
-        Mesin::create([
-            'idmesin' => $request->idmesin,
-            'id_cabang_gedung' => $request->id_cabang_gedung,
-            'keterangan' => $request->keterangan,
-        ]);
+        Mesin::create($request->only('idmesin','id_cabang_gedung','keterangan'));
 
-        return redirect()
-            ->route('mesin.index')
-            ->with('success', 'Mesin berhasil ditambahkan');
+        return redirect()->route('mesin.index')->with('success', 'Data mesin berhasil ditambahkan.');
     }
 
-    public function edit($id)
+    public function edit($idmesin)
     {
         $mesin = Mesin::with('cabangGedung')->get();
         $cabang = CabangGedung::all();
-        $editData = Mesin::findOrFail($id);
+        $editData = Mesin::findOrFail($idmesin);
 
         return view('mesin.index', compact('mesin', 'cabang', 'editData'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $idmesin)
     {
         $request->validate([
-            'idmesin' => 'required|string',
+            'idmesin' => 'required|string|max:255|unique:mesin,idmesin,'.$idmesin.',idmesin',
             'id_cabang_gedung' => 'required|exists:cabang_gedung,id',
-            'keterangan' => 'required|string',
+            'keterangan' => 'required|string|max:255',
         ]);
 
-        $mesin = Mesin::findOrFail($id);
-        $mesin->update($request->all());
+        $mesin = Mesin::findOrFail($idmesin);
+        $mesin->update($request->only('idmesin','id_cabang_gedung','keterangan'));
 
-        return redirect()
-            ->route('mesin.index')
-            ->with('success', 'Mesin berhasil diupdate');
+        return redirect()->route('mesin.index')->with('success', 'Data mesin berhasil diperbarui.');
     }
 }

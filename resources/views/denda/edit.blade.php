@@ -17,6 +17,7 @@
                    value="{{ $denda->jenis }}" readonly>
         </div>
 
+
         {{-- PRIORITAS --}}
         <div class="mb-3">
             <label class="form-label">Prioritas</label>
@@ -52,3 +53,5 @@
     </form>
 </div>
 @endsection
+
+//edit denda

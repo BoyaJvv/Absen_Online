@@ -64,14 +64,14 @@ class HakAksesMiddleware
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             
-            return response()->view('errors.access_denied', [
-                'message' => "Akses ditolak. Anda memiliki role '{$userHakAkses}' tetapi membutuhkan: " . implode(', ', $roles),
-                'action' => 'logout',
-                'debug' => [
-                    'user_role' => $userHakAkses,
-                    'required_roles' => $roles,
-                ]
-            ], 403);
+            // return response()->view('errors.access_denied', [
+            //     'message' => "Akses ditolak. Anda memiliki role '{$userHakAkses}' tetapi membutuhkan: " . implode(', ', $roles),
+            //     'action' => 'logout',
+            //     'debug' => [
+            //         'user_role' => $userHakAkses,
+            //         'required_roles' => $roles,
+            //     ]
+            // ], 403);
         }
 
         return $next($request);
