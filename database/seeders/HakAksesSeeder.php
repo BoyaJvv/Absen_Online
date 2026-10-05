@@ -4,20 +4,23 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class HakAksesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Hapus data lama tanpa truncate
         DB::table('hak_akses')->delete();
 
-        $hakAksesList = ['nusabot', 'full', 'general'];
+        $hakAksesList = [
+            1 => 'nusabot',
+            2 => 'full',
+            3 => 'general',
+        ];
 
-        foreach ($hakAksesList as $hak) {
+        foreach ($hakAksesList as $id => $hak) {
             DB::table('hak_akses')->insert([
-                'hak' => trim($hak),
+                'id' => $id,
+                'hak' => $hak,
             ]);
         }
 
