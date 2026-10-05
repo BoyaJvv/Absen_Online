@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CabangGedungController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\JabatanStatusController;
@@ -12,132 +12,137 @@ use App\Http\Controllers\MesinController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AbsensiPenggunaController;
 use App\Http\Controllers\DendaController;
-
 use App\Http\Controllers\ScanController;
 
+/*
+|--------------------------------------------------------------------------
+| Public / Machine Routes
+|--------------------------------------------------------------------------
+*/
+Route::match(['get', 'post'], '/pengguna/scan', [ScanController::class, 'index'])->name('pengguna.scan');
+Route::match(['get', 'post'], '/absensi-machine', [AbsensiController::class, 'storeFromMachine']);
 
-//================= SCAN ==================
-// Route bisa diakses via GET (buka browser) dan POST (submit form)
-Route::match(['get', 'post'], '/pengguna/scan', [ScanController::class, 'index'])->name('pengguna.scan');    
-
-
-// ================= ADMIN =================
-Route::get('/absensi', [AbsensiController::class, 'index'])
-    ->middleware('hakAkses:nusabot,full')
-    ->name('absensi.index');
-
-// ADMIN lihat rekap orang tertentu
-Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'rekap'])
-    ->middleware('hakAkses:nusabot,full')
-    ->name('absensi.pengguna.detail');
-
-// ================= USER =================
-// USER lihat rekap DIRI SENDIRI
-Route::get('/absensi/pengguna', [AbsensiPenggunaController::class, 'rekapSaya'])
-    ->middleware('auth', 'verified')
-    ->name('absensi.pengguna.saya');
-
-
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Routes (Semua Role)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'hakAkses:nusabot,full,general'])->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])
-        ->name('dashboard.index');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    // Profile Routes
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
-
-Route::prefix('pengaturan')->middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('denda', [DendaController::class, 'index'])->name('denda.index');
-    Route::get('denda/create', [DendaController::class, 'create'])->name('denda.create');
-    Route::post('denda', [DendaController::class, 'store'])->name('denda.store');
-    Route::get('denda/{id}/edit', [DendaController::class, 'edit'])->name('denda.edit');
-    Route::put('denda/{id}', [DendaController::class, 'update'])->name('denda.update');
-    Route::delete('denda/{id}', [DendaController::class, 'destroy'])->name('denda.destroy'); // Route Hapus
+/*
+|--------------------------------------------------------------------------
+| General User Routes (Role General)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/absensi/pengguna', [AbsensiPenggunaController::class, 'rekapSaya'])->name('absensi.pengguna.saya');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Admin Routes (Role: Nusabot & Full)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('/mesin', [MesinController::class, 'index'])->name('mesin.index');
-    Route::post('/mesin', [MesinController::class, 'store'])->name('mesin.store');
-    Route::get('/mesin/{id}/edit', [MesinController::class, 'edit'])->name('mesin.edit');
-    Route::put('/mesin/{id}', [MesinController::class, 'update'])->name('mesin.update');
+
+    // Absensi Admin
+    Route::prefix('absensi')->name('absensi.')->group(function () {
+        Route::get('/', [AbsensiController::class, 'index'])->name('index');
+        Route::post('/', [AbsensiController::class, 'store'])->name('store');
+        Route::get('/mesin', [AbsensiController::class, 'byMesin'])->name('mesin');
+        Route::get('/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'rekap'])->name('pengguna');
+        Route::get('/{id}', [AbsensiController::class, 'show'])->name('show');
+    });
+
+    // Kelola Pengguna
+    Route::prefix('pengguna')->name('pengguna.')->group(function () {
+        Route::get('/', [PenggunaController::class, 'index'])->name('index');
+        Route::get('/create', [PenggunaController::class, 'create'])->name('create');
+        Route::post('/', [PenggunaController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PenggunaController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PenggunaController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy');
+    });
+
+    // Kelola Mesin
+    Route::prefix('mesin')->name('mesin.')->group(function () {
+        Route::get('/', [MesinController::class, 'index'])->name('index');
+        Route::post('/', [MesinController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [MesinController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [MesinController::class, 'update'])->name('update');
+    });
+
+    // Kelola Cuti
+    Route::prefix('cuti')->name('cuti.')->group(function () {
+        Route::get('/', [CutiController::class, 'index'])->name('index');
+        Route::post('/', [CutiController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [CutiController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [CutiController::class, 'update'])->name('update');
+        Route::delete('/{id}', [CutiController::class, 'destroy'])->name('destroy');
+    });
+
+    // Cabang dan Gedung
+    Route::prefix('cabang-gedung')->name('cabang-gedung.')->group(function () {
+        Route::get('/', [CabangGedungController::class, 'index'])->name('index');
+        Route::post('/', [CabangGedungController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [CabangGedungController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [CabangGedungController::class, 'update'])->name('update');
+        Route::delete('/{id}', [CabangGedungController::class, 'destroy'])->name('destroy');
+    });
+
+    // Libur Khusus
+    Route::prefix('libur_khusus')->name('libur_khusus.')->group(function () {
+        Route::get('/', [LiburKhususController::class, 'index'])->name('index');
+        Route::post('/', [LiburKhususController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [LiburKhususController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [LiburKhususController::class, 'update'])->name('update');
+        Route::delete('/{id}', [LiburKhususController::class, 'destroy'])->name('destroy');
+    });
+
+    // Jabatan & Status
+    Route::prefix('jabatan')->name('jabatan.')->group(function () {
+        Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
+        Route::post('/', [JabatanStatusController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [JabatanStatusController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [JabatanStatusController::class, 'update'])->name('update');
+        Route::delete('/{id}', [JabatanStatusController::class, 'destroy'])->name('destroy');
+    });
+
+    // Pengaturan Denda
+    Route::prefix('pengaturan/denda')->name('denda.')->group(function () {
+        Route::get('/', [DendaController::class, 'index'])->name('index');
+        Route::get('/create', [DendaController::class, 'create'])->name('create');
+        Route::post('/', [DendaController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [DendaController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [DendaController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DendaController::class, 'destroy'])->name('destroy');
+    });
+
 });
 
-
-Route::middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
-    Route::get('/absensi/{id}', [AbsensiController::class, 'show'])->name('absensi.show');
-    Route::post('/absensi', [AbsensiController::class, 'store'])->name('absensi.store');
-    Route::get('/absensi-mesin', [AbsensiController::class, 'byMesin'])->name('absensi.mesin');
-    Route::get('/absensi/pengguna/{nomor_induk}', [AbsensiPenggunaController::class, 'show'])->name('absensi.pengguna');
-});
-
-
-// Cabang dan Gedung Routes
-Route::middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('/cabang-gedung', [CabangGedungController::class, 'index'])->name('cabang-gedung.index');
-    Route::post('/cabang-gedung', [CabangGedungController::class, 'store'])->name('cabang-gedung.store');
-    Route::delete('/cabang-gedung/{id}', [CabangGedungController::class, 'destroy'])->name('cabang-gedung.destroy');
-    Route::get('/cabang-gedung/{id}/edit', [CabangGedungController::class, 'edit'])->name('cabang-gedung.edit');
-    Route::put('/cabang-gedung/{id}', [CabangGedungController::class, 'update'])->name('cabang-gedung.update');
-});
-
-
-// cuti
-Route::middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('/cuti', [CutiController::class, 'index'])->name('cuti.index');
-    Route::post('/cuti', [CutiController::class, 'store'])->name('cuti.store');
-    Route::delete('/cuti/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
-    Route::get('/cuti/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
-    Route::put('/cuti/{id}', [CutiController::class, 'update'])->name('cuti.update');
-});
-
-
-// libur khusus
-Route::prefix('libur_khusus')->name('libur_khusus.')->middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('/', [LiburKhususController::class, 'index'])->name('index');
-    Route::post('/', [LiburKhususController::class, 'store'])->name('store');
-
-    Route::get('/{id}/edit', [LiburKhususController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [LiburKhususController::class, 'update'])->name('update');
-
-    Route::delete('/{id}', [LiburKhususController::class, 'destroy'])->name('destroy');
-});
-
-
-//jabatan
-Route::prefix('jabatan')->name('jabatan.')->middleware('hakAkses:nusabot,full')->group(function () {
-    Route::get('/', [JabatanStatusController::class, 'index'])->name('index');
-    Route::post('/', [JabatanStatusController::class, 'store'])->name('store');
-
-    Route::get('/{id}/edit', [JabatanStatusController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [JabatanStatusController::class, 'update'])->name('update');
-
-    Route::get('/toggle/{id}', [JabatanStatusController::class, 'toggle'])->name('toggle');
-});
-
-
-Route::middleware('hakAkses:nusabot,full')->prefix('pengguna')->name('pengguna.')->group(function () {
-    Route::get('/', [PenggunaController::class, 'index'])->name('index');
-    Route::get('/create', [PenggunaController::class, 'create'])->name('create');
-    Route::post('/', [PenggunaController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [PenggunaController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [PenggunaController::class, 'update'])->name('update');
-    Route::delete('/{id}', [PenggunaController::class, 'destroy'])->name('destroy'); 
-});
-
-// DEBUG ROUTE - HAPUS SETELAH SELESAI
+/*
+|--------------------------------------------------------------------------
+| Debug Route
+|--------------------------------------------------------------------------
+*/
 Route::get('/debug-akses', function () {
     $user = auth()->user();
-    
+
     if (!$user) {
         return response()->json(['error' => 'User tidak login'], 401);
     }
-    
+
     $jabatanStatus = $user->jabatanStatus;
     $hakAkses = $jabatanStatus?->hakAkses;
-    
+
     return response()->json([
         'user' => [
             'nomor_induk' => $user->nomor_induk,
@@ -159,12 +164,4 @@ Route::get('/debug-akses', function () {
     ], 200, [], JSON_PRETTY_PRINT);
 })->middleware('auth');
 
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::get('/absensi-machine', [AbsensiController::class, 'storeFromMachine']);
 require __DIR__.'/auth.php';

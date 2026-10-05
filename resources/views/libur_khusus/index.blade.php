@@ -1,83 +1,85 @@
 @extends('layouts.app')
 
+@section('title', 'Libur Khusus')
+
 @section('content')
-    {{-- ================= DATA TABLES CSS ================= --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-
-    @push('styles')
-        <style>
-            .dataTables_wrapper {
-                padding: 1rem;
-            }
-
-            .dataTables_filter,
-            .dt-buttons {
-                margin-bottom: 1rem;
-            }
-
-            .dataTables_info,
-            .dataTables_paginate {
-                margin-top: 1rem;
-            }
-
-            table.dataTable {
-                margin-top: 0.75rem !important;
-                margin-bottom: 0.75rem !important;
-            }
-        </style>
-    @endpush
-
-
-    <div class="relative max-w-7xl mx-auto px-4 py-6 space-y-10">
+    <div class="relative max-w-7xl mx-auto space-y-6">
 
         {{-- ================= HEADER ================= --}}
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Libur Khusus</h1>
-            <p class="text-gray-500 text-sm">Kelola tanggal libur khusus perusahaan</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="avatar" style="width:3rem;height:3rem;border-radius:14px;font-size:1.3rem;box-shadow:0 10px 20px -8px rgba(99,102,241,.6)">
+                    <i class="bi bi-calendar2-heart-fill"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold m-0">Libur Khusus</h1>
+                    <p class="text-slate-500 text-sm m-0">Kelola tanggal libur khusus perusahaan</p>
+                </div>
+            </div>
+
+            <button type="button" id="btnTambah"
+                class="js-open-tambah inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-bold text-sm cursor-pointer border-0"
+                style="background:linear-gradient(135deg,#4f46e5,#7c3aed);box-shadow:0 10px 20px -8px rgba(79,70,229,.65)">
+                <i class="bi bi-plus-lg"></i> Tambah Libur
+            </button>
         </div>
 
         {{-- ================= ALERT ================= --}}
-        @foreach (['successAdd', 'successEdit', 'successDelete'] as $msg)
-            @if (session($msg))
-                <div
-                    class="rounded-lg border px-4 py-3
-                {{ $msg === 'successAdd' ? 'bg-green-50 border-green-200 text-green-700' : '' }}
-                {{ $msg === 'successEdit' ? 'bg-blue-50 border-blue-200 text-blue-700' : '' }}
-                {{ $msg === 'successDelete' ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : '' }}">
-                    {{ session($msg) }}
+        @php
+            $alerts = [
+                'successAdd'    => ['bi-check-circle-fill', '#f0fdf4', '#bbf7d0', '#15803d'],
+                'successEdit'   => ['bi-pencil-square',     '#eff6ff', '#bfdbfe', '#1d4ed8'],
+                'successDelete' => ['bi-trash3-fill',       '#fffbeb', '#fde68a', '#b45309'],
+            ];
+        @endphp
+        @foreach ($alerts as $key => [$icon, $bg, $border, $text])
+            @if (session($key))
+                <div class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium"
+                    style="background:{{ $bg }};border:1px solid {{ $border }};color:{{ $text }}">
+                    <i class="bi {{ $icon }} text-lg"></i>
+                    <span>{{ session($key) }}</span>
                 </div>
             @endif
         @endforeach
 
         {{-- ================= TABLE ================= --}}
-        <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto space-y-4">
+        <div class="bg-white rounded-2xl p-6 overflow-x-auto">
 
-            {{-- TABLE --}}
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-base font-bold m-0">Daftar Tanggal Libur</h2>
+                <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background:#eef2ff;color:#4f46e5">
+                    {{ count($data) }} hari libur
+                </span>
+            </div>
+
             <table id="datatableLibur" class="min-w-full text-sm">
-                <thead class="bg-slate-800 text-white">
+                <thead>
                     <tr>
-                        <th class="px-4 py-3">Tanggal</th>
-                        <th class="px-4 py-3">Keterangan</th>
-                        <th class="px-4 py-3 text-center">Aksi</th>
+                        <th>Tanggal</th>
+                        <th>Keterangan</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
-                    @forelse ($data as $row)
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="px-4 py-3">
-                                {{ \Carbon\Carbon::parse($row->tanggal)->format('d F Y') }}
+                <tbody>
+                    @foreach ($data as $row)
+                        @php $tgl = \Carbon\Carbon::parse($row->tanggal); @endphp
+                        <tr>
+                            <td data-order="{{ $tgl->format('Y-m-d') }}" class="whitespace-nowrap">
+                                <span class="inline-flex items-center gap-2 font-semibold text-slate-800">
+                                    <i class="bi bi-calendar-event" style="color:#6366f1"></i>
+                                    {{ $tgl->locale('id')->translatedFormat('d F Y') }}
+                                </span>
                             </td>
-                            <td class="px-4 py-3">{{ $row->keterangan }}</td>
-                            <td class="px-4 py-3 text-center">
+                            <td>{{ $row->keterangan ?: '-' }}</td>
+                            <td class="text-center">
                                 <div class="flex justify-center gap-2">
 
                                     {{-- EDIT --}}
                                     <button type="button"
-                                        class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 rounded-lg
-                                         border border-blue-300 text-blue-600 hover:bg-blue-50"
+                                        class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 cursor-pointer bg-white"
                                         data-action="{{ route('libur_khusus.update', $row->id) }}"
-                                        data-tanggal="{{ $row->tanggal }}" data-keterangan="{{ $row->keterangan }}">
+                                        data-tanggal="{{ $tgl->format('Y-m-d') }}"
+                                        data-keterangan="{{ $row->keterangan }}">
                                         <i class="bi bi-pencil"></i>
                                         <span class="hidden sm:inline">Edit</span>
                                     </button>
@@ -87,9 +89,8 @@
                                         onsubmit="return confirm('Hapus data ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg
-                                               border border-red-300 text-red-600 hover:bg-red-50">
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 cursor-pointer bg-white">
                                             <i class="bi bi-trash"></i>
                                             <span class="hidden sm:inline">Hapus</span>
                                         </button>
@@ -98,126 +99,59 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="text-center py-6 text-gray-500">
-                                Data tidak ditemukan
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
 
-        {{-- ================= FORM ================= --}}
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-xl font-bold mb-4">Tambah Libur Khusus</h2>
-
-            <form method="POST" action="{{ route('libur_khusus.store') }}" class="grid md:grid-cols-2 gap-6">
-                @csrf
-
-                <div>
-                    <label class="block mb-2 font-medium">Tanggal</label>
-                    <input type="date" name="tanggal" class="w-full rounded-xl border px-4 py-3" required>
-                </div>
-
-                <div>
-                    <label class="block mb-2 font-medium">Keterangan</label>
-                    <textarea name="keterangan" rows="3" class="w-full rounded-xl border px-4 py-3"></textarea>
-                </div>
-
-                <div class="md:col-span-2 flex justify-end">
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        {{-- MODAL EDIT --}}
+        {{-- MODAL TAMBAH & EDIT (file terpisah) --}}
+        @include('libur_khusus.create')
         @include('libur_khusus.edit')
 
     </div>
+@endsection
 
-    {{-- ================= JS ================= --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
+{{-- Dimuat setelah jQuery & DataTables dari layout --}}
+@push('scripts')
     <script>
-        let liburDT;
-
-        function initDataTable() {
-            liburDT = $('#datatableLibur').DataTable({
+        $(function() {
+            $('#datatableLibur').DataTable({
                 pageLength: 8,
                 searching: true,
                 destroy: true,
+                order: [[0, 'desc']],
                 dom: 'Bftip',
-                buttons: [{
-                        extend: 'copy',
-                        title: 'Libur Khusus'
-                    },
-                    {
-                        extend: 'excel',
-                        title: 'Libur Khusus'
-                    },
-                    {
-                        extend: 'pdf',
-                        title: 'Libur Khusus'
-                    },
-                    {
-                        extend: 'print',
-                        title: 'Libur Khusus'
-                    },
+                buttons: [
+                    { extend: 'copy', title: 'Libur Khusus' },
+                    { extend: 'excel', title: 'Libur Khusus', exportOptions: { columns: [0, 1] } },
+                    { extend: 'pdf', title: 'Libur Khusus', exportOptions: { columns: [0, 1] } },
+                    { extend: 'print', title: 'Libur Khusus', exportOptions: { columns: [0, 1] } },
                     'colvis'
                 ],
+                columnDefs: [{ targets: 2, orderable: false }],
                 language: {
                     search: 'Cari:',
+                    emptyTable: 'Belum ada data libur khusus',
+                    zeroRecords: 'Data tidak ditemukan',
                     info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-                    paginate: {
-                        previous: '‹',
-                        next: '›'
-                    }
+                    infoEmpty: 'Tidak ada data',
+                    paginate: { previous: '‹', next: '›' }
                 }
             });
-        }
-
-        $(document).ready(function() {
-            initDataTable();
         });
 
-        /* ============================
-           OPEN MODAL
-        ============================ */
+        /* ===== BUKA MODAL EDIT ===== */
         $(document).on('click', '.btn-edit', function() {
+            $('#formEdit').attr('action', $(this).data('action'));
+            $('#editTanggal').val($(this).data('tanggal'));
+            $('#editKeterangan').val($(this).data('keterangan'));
 
-            let action = $(this).data('action');
-            let tanggal = $(this).data('tanggal');
-            let keterangan = $(this).data('keterangan');
-
-            $('#formEdit').attr('action', action);
-            $('#editTanggal').val(tanggal);
-            $('#editKeterangan').val(keterangan);
-
-            $('#modalEdit')
-                .removeClass('hidden')
-                .addClass('flex'); // 🔥 INI YANG BIKIN CENTER
+            $('#modalEdit').removeClass('hidden').addClass('flex');
         });
 
-
-        /* ============================
-           CLOSE MODAL
-        ============================ */
+        /* ===== TUTUP MODAL EDIT ===== */
         $(document).on('click', '#closeModal', function() {
-            $('#modalEdit')
-                .addClass('hidden')
-                .removeClass('flex');
+            $('#modalEdit').addClass('hidden').removeClass('flex');
         });
     </script>
-@endsection
+@endpush

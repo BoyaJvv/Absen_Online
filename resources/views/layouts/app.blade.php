@@ -2,247 +2,261 @@
 <html lang="id">
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
-    <title>@yield('title', 'Dashboard')</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $pageTitle = trim($__env->yieldContent('title')) ?: ucwords(str_replace(['-', '_'], ' ', request()->segment(1) ?? 'Dashboard'));
+    @endphp
+    <title>{{ $pageTitle }} · Absensi Cendekia</title>
+
+    {{-- Font --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    {{-- Tailwind CDN (fallback HP / ngrok) --}}
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Bootstrap Icons --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
     {{-- Bootstrap --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    {{-- Bootstrap Icons --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    {{-- Tailwind CDN --}}
+    <script src="https://cdn.tailwindcss.com"></script>
 
     {{-- Tailwind via Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- js datatables --}}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    {{-- DataTables CSS --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
-    <style>
-        :root {
-            --sidebar-dark: #0f172a;
-            --sidebar-mid: #020617;
-            --accent: #2563eb;
-            --bg-main: #f8fafc;
-        }
+    {{-- Tema modern (harus paling akhir agar menimpa library lain) --}}
+    <link rel="stylesheet" href="{{ asset('css/modern-ui.css') }}?v={{ @filemtime(public_path('css/modern-ui.css')) }}">
 
-        @media (max-width: 1024px) {
-            #sidebar {
-                position: fixed;
-                top: 0;
-                left: -100%;
-                height: 100vh;
-                width: 16rem;
-                z-index: 50;
-            }
-
-            #sidebar.show {
-                left: 0;
-            }
-            
-        }
-    </style>
+    @stack('styles')
 </head>
 
-<body class="bg-[var(--bg-main)] text-gray-800">
+@php
+    $user = auth()->user();
+    $jabatanStatus = $user?->jabatanStatus;
+    $hakAkses = $jabatanStatus?->hakAkses;
+    $userRole = $hakAkses?->hak;
+    $isAdmin = in_array($userRole, ['nusabot', 'full']);
+    $isGeneral = $userRole === 'general';
 
-    <div class="flex min-h-screen">
+    $namaUser = $user?->nama ?? ($user?->name ?? 'User');
+    $inisial = strtoupper(mb_substr($namaUser, 0, 2));
 
-        {{-- SIDEBAR --}}
-        <aside id="sidebar"
-            class="w-64 bg-gradient-to-b from-[var(--sidebar-dark)] to-[var(--sidebar-mid)]
-        text-white flex flex-col transition-all duration-300">
+    $menuUtama = [
+        ['url' => url('dashboard'), 'icon' => 'bi-grid-1x2-fill', 'label' => 'Dashboard', 'active' => request()->is('dashboard*') || request()->is('/')],
+    ];
 
-            <div class="p-4 text-center border-b border-white/10">
-                <img src="{{ asset('storage/logo/neper.png') }}" class="mx-auto w-20">
-            </div>
+    $menuAdmin = [
+        ['url' => url('pengguna'), 'icon' => 'bi-people-fill', 'label' => 'Pengguna', 'active' => request()->is('pengguna*')],
+        ['url' => url('absensi'), 'icon' => 'bi-card-checklist', 'label' => 'Absensi', 'active' => request()->is('absensi*') && !request()->is('absensi/pengguna*')],
+        ['url' => url('cuti'), 'icon' => 'bi-calendar-event-fill', 'label' => 'Cuti', 'active' => request()->is('cuti*')],
+        ['url' => url('libur_khusus'), 'icon' => 'bi-calendar2-heart-fill', 'label' => 'Tanggal Libur', 'active' => request()->is('libur_khusus*')],
+        ['url' => url('mesin'), 'icon' => 'bi-cpu-fill', 'label' => 'Mesin', 'active' => request()->is('mesin*')],
+    ];
 
-            <div class="px-4 py-3 border-b border-white/10 text-center">
-                <p class="text-sm opacity-70">Login sebagai</p>
-                <p class="font-semibold text-base">
-                    {{ auth()->user()?->nama ?? 'User' }}
-                </p>
-            </div>
+    $menuSetting = [
+        ['url' => url('jabatan'), 'label' => 'Jabatan', 'active' => request()->is('jabatan*')],
+        ['url' => route('cabang-gedung.index'), 'label' => 'Cabang', 'active' => request()->is('cabang*')],
+        ['url' => route('denda.index'), 'label' => 'Denda', 'active' => request()->is('pengaturan/denda*') || request()->is('denda*')],
+    ];
+    $settingOpen = collect($menuSetting)->contains('active', true);
+@endphp
 
-            @php
-                $user = auth()->user();
-                $jabatanStatus = $user->jabatanStatus;
-                $hakAkses = $jabatanStatus?->hakAkses;
-                $userRole = $hakAkses?->hak;
-                $isAdmin = in_array($userRole, ['nusabot', 'full']);
-                $isGeneral = $userRole === 'general';
-            @endphp
+<body class="antialiased">
 
-            <nav class="flex-1 px-3 py-4 space-y-1 text-sm text-white">
+    <div class="app-shell flex min-h-screen">
 
-                {{-- DASHBOARD --}}
-                <a href="{{ url('dashboard') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg
-              hover:bg-white/10 transition whitespace-nowrap">
-                    <i class="bi bi-speedometer2 text-lg w-5 text-center"></i>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
+        {{-- ================= SIDEBAR ================= --}}
+        <aside id="sidebar" class="text-slate-300 flex flex-col justify-between shrink-0">
 
-                {{-- ================= ADMIN (nusabot, full) ================= --}}
-                @if ($isAdmin)
-                    <a href="{{ url('pengguna') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <i class="bi bi-person text-lg w-5 text-center"></i>
-                        <span class="sidebar-text">Pengguna</span>
-                    </a>
+            <div class="p-3">
+                {{-- BRAND --}}
+                <div class="flex items-center gap-3 px-2 h-14 mb-1">
+                    <div class="avatar" style="width:2.5rem;height:2.5rem;font-size:1.05rem;box-shadow:0 8px 20px -6px rgba(99,102,241,.7)">
+                        <i class="bi bi-fingerprint"></i>
+                    </div>
+                    <div class="sidebar-text overflow-hidden">
+                        <div class="font-extrabold text-white text-[15px] tracking-wide leading-tight whitespace-nowrap">ABSENSI</div>
+                        <div class="text-[10px] text-indigo-300 font-semibold tracking-[.18em] uppercase whitespace-nowrap">Cendekia System</div>
+                    </div>
+                </div>
 
-                    <a href="{{ url('absensi') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <i class="bi bi-card-checklist text-lg w-5 text-center"></i>
-                        <span class="sidebar-text">Absensi</span>
-                    </a>
+                {{-- USER --}}
+                <div class="user-card">
+                    <div class="avatar">{{ $inisial }}</div>
+                    <div class="sidebar-text min-w-0 flex-1">
+                        <p class="text-[10px] text-slate-400 font-medium leading-none m-0">Login sebagai</p>
+                        <p class="text-[13px] font-semibold text-white truncate mt-1 mb-0">{{ $namaUser }}</p>
+                    </div>
+                </div>
 
-                    <a href="{{ url('cuti') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <i class="bi bi-calendar-event text-lg w-5 text-center"></i>
-                        <span class="sidebar-text">Cuti</span>
-                    </a>
+                <nav class="mt-1">
+                    <div class="nav-label sidebar-text">Menu Utama</div>
+                    @foreach ($menuUtama as $m)
+                        <a href="{{ $m['url'] }}" title="{{ $m['label'] }}" class="nav-item {{ $m['active'] ? 'active' : '' }}">
+                            <i class="bi {{ $m['icon'] }}"></i><span class="sidebar-text truncate">{{ $m['label'] }}</span>
+                        </a>
+                    @endforeach
 
-                    <a href="{{ url('libur_khusus') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <i class="bi bi-globe text-lg w-5 text-center"></i>
-                        <span class="sidebar-text">Tanggal Libur</span>
-                    </a>
+                    {{-- ADMIN --}}
+                    @if ($isAdmin)
+                        <div class="nav-label sidebar-text">Manajemen</div>
+                        <div class="space-y-1">
+                            @foreach ($menuAdmin as $m)
+                                <a href="{{ $m['url'] }}" title="{{ $m['label'] }}" class="nav-item {{ $m['active'] ? 'active' : '' }}">
+                                    <i class="bi {{ $m['icon'] }}"></i><span class="sidebar-text truncate">{{ $m['label'] }}</span>
+                                </a>
+                            @endforeach
 
-                    <a href="{{ url('mesin') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <i class="bi bi-cpu text-lg w-5 text-center"></i>
-                        <span class="sidebar-text">Mesin</span>
-                    </a>
-
-                    {{-- PENGATURAN --}}
-                    <details class="group">
-                        <summary
-                            class="flex items-center justify-between px-4 py-3 rounded-lg
-                       cursor-pointer hover:bg-white/10 transition list-none">
-                            <span class="flex items-center gap-3">
-                                <i class="bi bi-gear text-lg w-5 text-center"></i>
-                                <span class="sidebar-text">Pengaturan</span>
-                            </span>
-                            <i class="bi bi-chevron-down text-xs transition group-open:rotate-180"></i>
-                        </summary>
-
-                        <div class="ml-11 mt-2 space-y-1 text-sm">
-                            <a href="{{ url('jabatan') }}" class="block px-2 py-1 rounded hover:bg-white/10">
-                                Jabatan
-                            </a>
-                            <a href="{{ route('cabang-gedung.index') }}"
-                                class="block px-2 py-1 rounded hover:bg-white/10">
-                                Cabang
-                            </a>
-                            <a href="{{ route('denda.index') }}" class="block px-2 py-1 rounded hover:bg-white/10">
-                                Denda
-                            </a>
+                            <details class="sidebar-details" {{ $settingOpen ? 'open' : '' }}>
+                                <summary class="nav-item justify-between" title="Pengaturan">
+                                    <span class="flex items-center gap-3">
+                                        <i class="bi bi-gear-fill"></i><span class="sidebar-text truncate">Pengaturan</span>
+                                    </span>
+                                    <i class="bi bi-chevron-down chev sidebar-text"></i>
+                                </summary>
+                                <div class="sidebar-text mt-1 space-y-0.5">
+                                    @foreach ($menuSetting as $s)
+                                        <a href="{{ $s['url'] }}" class="nav-sub {{ $s['active'] ? 'active' : '' }}">{{ $s['label'] }}</a>
+                                    @endforeach
+                                </div>
+                            </details>
                         </div>
-                    </details>
 
-                {{-- ================= GENERAL USER ================= --}}
-                @elseif ($isGeneral)
-                    <a href="{{ url('/absensi/pengguna') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <i class="bi bi-clipboard-data text-lg w-5 text-center"></i>
-                        <span class="sidebar-text">Rekap Absensi</span>
-                    </a>
-                @endif
+                    {{-- GENERAL USER --}}
+                    @elseif ($isGeneral)
+                        <div class="nav-label sidebar-text">Absensi Saya</div>
+                        <a href="{{ url('/absensi/pengguna') }}" title="Rekap Absensi"
+                            class="nav-item {{ request()->is('absensi/pengguna*') ? 'active' : '' }}">
+                            <i class="bi bi-clipboard-data-fill"></i><span class="sidebar-text truncate">Rekap Absensi</span>
+                        </a>
+                    @endif
+                </nav>
+            </div>
 
-            </nav>
-
-
-            <div class="p-4 border-t border-white/10">
+            {{-- LOGOUT --}}
+            <div class="p-3" style="border-top:1px solid rgba(255,255,255,.06)">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button
-                        class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg flex items-center justify-center gap-2">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span class="sidebar-text">Logout</span>
+                    <button type="submit" class="logout-btn" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i><span class="sidebar-text">Keluar</span>
                     </button>
                 </form>
             </div>
         </aside>
 
-        <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 hidden z-40 lg:hidden"></div>
+        <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 hidden z-40 lg:hidden" style="backdrop-filter:blur(2px)"></div>
 
-        <div class="flex-1 flex flex-col">
+        {{-- ================= KONTEN ================= --}}
+        <div class="flex-1 flex flex-col min-w-0">
 
-            <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleSidebar()" class="text-xl">
-                        <i class="bi bi-list"></i>
+            <header class="topbar">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button onclick="toggleSidebar()" class="icon-btn" title="Toggle Sidebar" aria-label="Toggle sidebar">
+                        <i class="bi bi-layout-sidebar-inset"></i>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-700">
-                        @yield('title')
-                    </h1>
+                    <div class="min-w-0">
+                        <h1 class="page-title truncate">{{ $pageTitle }}</h1>
+                        <p class="page-sub hide-sm" id="today-label">&nbsp;</p>
+                    </div>
                 </div>
 
-                <button onclick="toggleFocus()" class="text-xl">
-                    <i class="bi bi-arrows-fullscreen"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <div class="hide-sm text-end me-1" style="line-height:1.15">
+                        <div id="live-clock" class="font-bold text-slate-800" style="font-size:1rem;font-variant-numeric:tabular-nums">--:--:--</div>
+                        <div class="page-sub">Waktu setempat</div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="user-chip" id="userChip" role="button" tabindex="0">
+                            <div class="avatar" style="width:2.1rem;height:2.1rem;font-size:.72rem;border-radius:50%">{{ $inisial }}</div>
+                            <span class="hide-sm text-[13px] font-semibold text-slate-700 max-w-[9rem] truncate">{{ $namaUser }}</span>
+                            <i class="bi bi-chevron-down text-[10px] text-slate-400 hide-sm"></i>
+                        </div>
+                        <div class="menu-pop" id="userMenu">
+                            <div class="px-3 py-2" style="border-bottom:1px solid var(--line);margin-bottom:.3rem">
+                                <div class="text-[13px] font-bold text-slate-800 truncate">{{ $namaUser }}</div>
+                                <div class="text-[11px] text-slate-500">{{ $jabatanStatus?->jabatan_status ?? ucfirst($userRole ?? 'Pengguna') }}</div>
+                            </div>
+                            <a href="{{ route('profile.index') }}"><i class="bi bi-person-circle"></i> Profil Saya</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" style="color:#e11d48"><i class="bi bi-box-arrow-right"></i> Keluar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </header>
 
-            <main class="flex-1 p-6 transition-all">
+            <main class="page-main flex-1">
                 @yield('content')
             </main>
 
-            <footer class="bg-white text-center py-3 text-sm text-gray-500">
-                © {{ date('Y') }} Absensi Online
+            <footer class="footer-bar">
+                © {{ date('Y') }} Absensi Cendekia · Sistem Absensi Online
             </footer>
 
-          <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-y
-
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
             @stack('scripts')
         </div>
     </div>
 
     <script>
-        let collapsed = false;
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
 
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            const texts = document.querySelectorAll('.sidebar-text');
-
             if (window.innerWidth <= 1024) {
                 sidebar.classList.toggle('show');
                 overlay.classList.toggle('hidden');
                 return;
             }
-
-            collapsed = !collapsed;
-            sidebar.classList.toggle('w-64');
-            sidebar.classList.toggle('w-20');
-            texts.forEach(t => t.classList.toggle('hidden'));
+            const collapsed = sidebar.classList.toggle('is-collapsed');
+            if (collapsed) document.querySelectorAll('.sidebar-details').forEach(d => d.removeAttribute('open'));
+            try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch (e) {}
         }
 
-        function toggleFocus() {
-            document.getElementById('sidebar').classList.toggle('hidden');
-        }
+        // pulihkan status sidebar (desktop)
+        try {
+            if (window.innerWidth > 1024 && localStorage.getItem('sidebarCollapsed') === '1') {
+                sidebar.classList.add('is-collapsed');
+                document.querySelectorAll('.sidebar-details').forEach(d => d.removeAttribute('open'));
+            }
+        } catch (e) {}
 
-        
+        // menu pengguna
+        const chip = document.getElementById('userChip');
+        const menu = document.getElementById('userMenu');
+        chip.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); });
+        document.addEventListener('click', () => menu.classList.remove('open'));
+
+        // tanggal & jam
+        const tgl = document.getElementById('today-label');
+        const jam = document.getElementById('live-clock');
+        function tick() {
+            const n = new Date();
+            tgl.textContent = n.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            jam.textContent = n.toLocaleTimeString('id-ID', { hour12: false }).replace(/\./g, ':');
+        }
+        tick(); setInterval(tick, 1000);
     </script>
 </body>
 

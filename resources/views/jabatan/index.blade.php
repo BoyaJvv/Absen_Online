@@ -37,20 +37,32 @@ table.dataTable {
         <p class="text-gray-500 text-sm">Kelola data jabatan dan hak akses</p>
     </div>
 
-    {{-- ================= ALERT ================= --}}
+    {{-- ================= ALERT NOTIFIKASI ================= --}}
     @if (session('successAdd'))
-        <div class="rounded-lg border bg-green-50 border-green-200 px-4 py-3 text-green-700">
+        <div class="rounded-lg border bg-emerald-50 border-emerald-200 px-4 py-3 text-emerald-700 text-sm">
             {{ session('successAdd') }}
         </div>
     @endif
 
-    @if (session('successToggle'))
-        <div class="rounded-lg border bg-yellow-50 border-yellow-200 px-4 py-3 text-yellow-700">
-            Status <b>{{ session('successToggle') }}</b> menjadi <b>{{ session('aktifText') }}</b>
+    @if (session('successEdit'))
+        <div class="rounded-lg border bg-blue-50 border-blue-200 px-4 py-3 text-blue-700 text-sm">
+            {{ session('successEdit') }}
         </div>
     @endif
 
-    {{-- ================= TABLE ================= --}}
+    @if (session('successDelete'))
+        <div class="rounded-lg border bg-emerald-50 border-emerald-200 px-4 py-3 text-emerald-700 text-sm">
+            {{ session('successDelete') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="rounded-lg border bg-rose-50 border-rose-200 px-4 py-3 text-rose-700 text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    {{-- ================= TABEL JABATAN ================= --}}
     <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
         <table id="datatableJabatan" class="min-w-full text-sm">
             <thead class="bg-slate-800 text-white">
@@ -64,25 +76,37 @@ table.dataTable {
             <tbody class="divide-y">
                 @foreach ($data as $row)
                     <tr class="hover:bg-slate-50 transition text-center">
-                        <td class="px-4 py-3">{{ $row->jabatan_status }}</td>
+                        <td class="px-4 py-3 font-medium text-slate-800">{{ $row->jabatan_status }}</td>
                         <td class="px-4 py-3">
                             {{ $row->hakAkses->hak ?? 'N/A' }}
                         </td>
                         <td class="px-4 py-3">
-                            {{ $row->aktif ? 'Aktif' : 'Non-aktif' }}
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $row->aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
+                                {{ $row->aktif ? 'Aktif' : 'Non-aktif' }}
+                            </span>
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex justify-center gap-3">
+                            <div class="flex justify-center items-center gap-3">
+                                {{-- Tombol Edit (Tetap Biru dengan Pensil) --}}
                                 <a href="{{ route('jabatan.edit', $row->id) }}"
-                                    class="text-blue-600 hover:text-blue-800">
-                                    <i class="bi bi-pencil-square"></i>
+                                    class="text-blue-600 hover:text-blue-800 transition"
+                                    title="Edit Jabatan">
+                                    <i class="bi bi-pencil-square text-lg"></i>
                                 </a>
 
-                                <a href="{{ route('jabatan.toggle', $row->id) }}"
-                                    class="text-red-600 hover:text-red-800"
-                                    onclick="return confirm('Ubah status jabatan ini?')">
-                                    <i class="bi bi-dash-circle"></i>
-                                </a>
+                                {{-- Form Hapus Permanen (Merah dengan Ikon Trash) --}}
+                                <form action="{{ route('jabatan.destroy', $row->id) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus data jabatan \'{{ $row->jabatan_status }}\' secara permanen?')"
+                                      class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="text-rose-600 hover:text-rose-800 transition cursor-pointer bg-transparent border-0 p-0"
+                                            title="Hapus Jabatan">
+                                        <i class="bi bi-trash text-lg"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -93,21 +117,21 @@ table.dataTable {
 
     {{-- ================= FORM TAMBAH ================= --}}
     <div class="bg-white rounded-2xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold mb-4">Tambah Jabatan / Status</h3>
+        <h3 class="text-lg font-semibold mb-4 text-slate-800">Tambah Jabatan / Status</h3>
 
         <form method="POST" action="{{ route('jabatan.store') }}" class="grid md:grid-cols-2 gap-6">
             @csrf
 
             <div>
-                <label class="block mb-2 font-medium">Jabatan / Status</label>
+                <label class="block mb-2 font-medium text-sm text-slate-700">Jabatan / Status</label>
                 <input type="text" name="jabatan_status"
-                    class="w-full rounded-xl border px-4 py-3" required>
+                    class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
 
             <div>
-                <label class="block mb-2 font-medium">Hak Akses</label>
+                <label class="block mb-2 font-medium text-sm text-slate-700">Hak Akses</label>
                 <select name="hak_akses"
-                    class="w-full rounded-xl border px-4 py-3">
+                    class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     @foreach ($hakAksesList as $hak)
                         <option value="{{ $hak->id }}">{{ $hak->hak }}</option>
                     @endforeach
@@ -115,7 +139,7 @@ table.dataTable {
             </div>
 
             <div class="md:col-span-2 flex justify-end">
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-md shadow-blue-500/20 transition cursor-pointer">
                     Simpan
                 </button>
             </div>
